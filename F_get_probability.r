@@ -3,7 +3,8 @@
 ####################################################################
 
 get_occurrenceProbability_to_scores <- function(i, # spname
-                                                pred # data frame of predicted probability
+                                                pred, # data frame of predicted probability
+                                                scores # PCA data
 ){
   
   # Get probability of the species

@@ -57,7 +57,7 @@ if (genus_name == "Acaena"){
 ### Import raster of climate data
 # Reference raster for coordinate system. This raster must have the same dimentions as the raster of occurrence data
 ref.raster <- raster(
-  paste("Y://GIS map and Climate data//newzealandpotentialvegetatio", reso, ".bil", sep="")
+  paste("Y://GIS map and Climate data//newzealandpotentialvegetatio1.bil", sep="")
 )
 proj4stringNZTM <- proj4string(ref.raster)
 # Worldclim ver.1.4
@@ -104,8 +104,16 @@ setwd("Y://BIOMOD for Grid2")
 ## Takes a while to run... Don't run on laptop! Slow!
 #########################################################
 
-try(lapply(spname, runBiomod, data = climate.occ3, myExpl = myExpl, folder.name = "7Nov18"),
-    silent = FALSE)
+# try(lapply(spname, runBiomod, data = climate.occ3, myExpl = myExpl, folder.name = "7Nov18"),
+#     silent = FALSE)
+
+for(i in spname){
+  tryCatch(
+    runBiomod(i, data = climate.occ3, myExpl = myExpl, folder.name = "7Nov18"),
+    error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
+    
+  )
+}
 
 ##########################################################
 ## NOTE! MAKE SURE TEMPORARY RASTER FOLDER IS NOT FULL! ##
@@ -126,10 +134,15 @@ folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus
 ## Takes a while to run... slow but wait!
 #########################################################
 
-lapply(folders, biomodProjection_fromSavedBiomodModels,
-       modelname = "7Nov18",
-       proj.name = "7Nov18"
-       )
+for(i in folders){
+  tryCatch(
+    biomodProjection_fromSavedBiomodModels(i,
+    modelname = "7Nov18",
+    proj.name = "7Nov18"),
+    error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
+    
+  )
+}
 
 #################################################################################################################
 ########################   Model evaluations     
@@ -176,8 +189,14 @@ projectionPlot <- function(spname, # species name
   
 }
 
-lapply(folders, projectionPlot, proj.name = "7Nov18")
 
+for(i in folders){
+  tryCatch(
+    projectionPlot(i, proj.name = "7Nov18"),
+    error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
+    
+  )
+}
 #################################################################################################################
 ########################        BIOMOD ensamble models
 #################################################################################################################

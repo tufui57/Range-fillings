@@ -2,56 +2,72 @@
 ### Map and climate space of occurrence probability
 ########################################################################################
 
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+source(".//Range fillings//F_get_probability.r")
+
 ###############################################################
 ## Data preparation 
 ###############################################################
-genus_name = "Chionochloa"
 
-source(".\\Chionochloa niche evolution\\scripts\\07_Data_preparation_for_drawing_EnvSpace_and_Maps.r")
-source(".//Chionochloa niche evolution//00_DataPreparation.R")
-source(".//Range fillings//F_get_probability.r")
+genus_name = "Acaena"
 
 # Load ensamble projection data
-scores.prob <- get(load(paste(".//ensemblePrediction_", genus_tag, ".data", sep = "")))
+scores.prob <- get(load(paste("Y://ensemblePredictionBinary_", genus_name, ".data", sep = "")))
 
-vols <- read.csv(paste("Niche_Range_Volume_", genus_tag, ".csv", sep = ""))
-splist <- read.csv(paste(".\\NicheVolume_age_", genus_tag, ".csv", sep = ""))
+# Load PCA scores of occurrence data
+if(file.exists(paste(".\\Scores_", genus_name, "_landcover.data", sep = "")) == FALSE){
+  source(".//Range fillings//03_generate_PCAscores.r")
+}else{
+  load(paste(".\\Scores_", genus_name, "_landcover.data", sep = "")) 
+}
 
-spname <- (!is.na(splist$spname)) %>% splist$spname[.] %>% as.character
+colnames(scores)[grep(paste("^", genus_name, sep=""), colnames(scores))] <- gsub("_", "\\.", 
+                                                                                 colnames(scores)[grep(paste("^", genus_name, sep=""), colnames(scores))])
+
+spname <- names(scores.prob)
 
 #########################################################################
 ### Niche filling 
 #########################################################################
 
-### Niche filling 
-vols$nichefilling <- (vols$nicheVolume / as.numeric(as.character(vols$potentialNicheVolume.D)))
-mean(vols$nichefilling)
+rangefilling <- list()
+for(i in spname){
+  tryCatch(
+    {
+      predictedP <- (values(scores.prob[[i]]) == 1) %>% sum(., na.rm = T)
+      # Range filling 
+      rangefilling[[i]] <- (sum(scores[,i] == 1)/ predictedP)
+    },
+    error = function(e){cat("ERROR :",conditionMessage(e), "\n")}
+  )
+  
+}
 
-### Range filling 
-vols$rangefilling <- (vols$rangeVolume / as.numeric(as.character(vols$potentialRangeVolume.D)))
-mean(vols$rangefilling)
+rangefilling <- unlist(rangefilling)
 
 #########################################################################
 ### map and nihce of species with max/min/median niche filling
 #########################################################################
 
-maxsp <- vols[which(vols$nichefilling == max(vols$nichefilling)), "spname"] %>% as.character
-minsp <- vols[which(vols$nichefilling == min(vols$nichefilling)), "spname"] %>% as.character
-medsp <- vols[which(vols$nichefilling == median(vols$nichefilling)), "spname"] %>% as.character
+maxsp <- spname[which(rangefilling == max(rangefilling))]
+minsp <- spname[which(rangefilling == min(rangefilling))]
+medsp <- spname[which(rangefilling == median(rangefilling))]
 
 
 ####################################################################
-### Potential niche volume
+### Potential niche
 ####################################################################
-# Plot niche of occurrence 
-species = spname[1]
+
 extent_x = c(min(scores$PC1), max(scores$PC1))
 extent_y = c(min(scores$PC2), max(scores$PC2))
 
+### Plot niche of occurrence 
 plot.niche.prob.and.occurrences <- function(species,# character string of species name
                                             scores, # PCA score
                                             scores.prob # raster of probability
-                                            ){
+){
   # get probability of occurreces
   prob1 <- get_occurrenceProbability_to_scores(species, scores.prob, scores)
   # get occurrence data
@@ -83,8 +99,8 @@ plot.niche.prob.and.occurrences <- function(species,# character string of specie
 }
 
 
-  
-# Plot all occurrence records regardless of habitat
+
+### Plot all occurrence records regardless of habitat
 map_plot_monoColour <- function(species, # character string of species name
                                 scores, # PCA score
                                 scores.prob # raster of probability
@@ -98,9 +114,7 @@ map_plot_monoColour <- function(species, # character string of species name
   
   # Plot map
   pMap <- ggplot() +
-    # Plot NZ outline
-    #geom_polygon(data = nzland, aes(x = long, y = lat, group = group), colour = "gray50", fill = 'gray90') +
-    # Plot probability
+    # Plot prediction
     geom_point(data = prob1, aes_string("x", "y", colour = paste("prob_", species, sep = "")), alpha = 0.1) +
     scale_colour_gradient(low = "gray90", high = "black") +
     # Plot occurrence points
@@ -125,13 +139,13 @@ map_plot_monoColour <- function(species, # character string of species name
   
 }
 
-
+### Combine map and Climate space plot
 plot.niche.and.map.of.prob.and.occurrences <- function(species,# character string of species name
                                                        scores, # PCA score
                                                        scores.prob # raster of probability
 ){
   # get probability of occurreces
-  prob1 <- get_occurrenceProbability_to_scores(i = species, pred = scores.prob, scores = scores)
+  prob1 <- get_occurrenceProbability_to_scores(species, scores.prob, scores)
   
   pMain <- plot.niche.prob.and.occurrences(species, scores, scores.prob)
   pMap <- map_plot_monoColour(species,scores, scores.prob)
@@ -141,9 +155,5 @@ plot.niche.and.map.of.prob.and.occurrences <- function(species,# character strin
   dev.off()
 }
 
-lapply(c(minsp, medsp, maxsp), plot.niche.and.map.of.prob.and.occurrences,
+lapply(c(maxsp, medsp, minsp), plot.niche.and.map.of.prob.and.occurrences,
        scores, scores.prob)
-
-
-
-plot.niche.and.map.of.prob.and.occurrences(species, scores, scores.prob)
