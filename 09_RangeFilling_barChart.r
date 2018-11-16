@@ -6,12 +6,13 @@ library(dplyr)
 library(ggplot2)
 library(gridExtra)
 source(".//Range fillings//F_get_probability.r")
+source(".//functions//F_speciseNameCleaning_spnameFromPhylogenyTree.r")
 
 ###############################################################
 ## Data preparation 
 ###############################################################
 
-genus_name = "Acaena"
+genus_name = "Acaena" # "Chionochloa"
 
 # Load ensamble projection data
 scores.prob <- get(load(paste("Y://ensemblePredictionBinary_", genus_name, ".data", sep = "")))
@@ -29,7 +30,7 @@ colnames(scores)[grep(paste("^", genus_name, sep = ""), colnames(scores))] <- gs
 spname <- names(scores.prob)
 
 #########################################################################
-### Niche filling 
+### Range filling 
 #########################################################################
 
 rangefilling <- list()
@@ -48,30 +49,22 @@ for(i in spname){
 rangefilling <- unlist(rangefilling)
 
 
+### make species name tags
+tag <- makeTag_separate(spname, genus_name, separate = ".")[,2]
+tag <- data.frame(cbind(spname, tag))
+rangefilling <- data.frame(names(rangefilling), rangefilling)
+rangefilling <- merge(tag, rangefilling, by.x = "spname", by.y = "names.rangefilling.")
+
+### Change order of data frame doesn't change order of bars
+# Change order of factor (in this case, species name) levels
+rangefilling2 <- rangefilling[order(rangefilling$rangefilling),]
+rangefilling2$tag <- factor(rangefilling2$tag, levels = rangefilling2$tag[order(rangefilling2$rangefilling)])
+
 #########################################################################
 ### Bar plot of range filling 
 #########################################################################
-tag <- makeTag_separate(spname, genus_name, separate = "_")[,2]
-tag <- data.frame(tag)
-rangefilling <- cbind(tag, rangefilling)
 
-# Change order of data frame doesn't change order of bars
-# Change order of factor (in this case, species name) levels
-rangefilling2 <- rangefilling[order(rangefilling),]
-rangefilling2$tag <- factor(rangefilling2$tag, levels = rangefilling2$tag[order(rangefilling2$nichefilling)])
-
-
-#########################################################################
-### Bar plot of range filling 
-#########################################################################
-
-# Change order of data frame doesn't change order of bars
-# Change order of factor (in this case, species name) levels
-# vols2 <- vols[order(vols$rangefilling),]
-# vols2$tag <- factor(vols2$tag, levels = vols2$tag[order(vols2$rangefilling)])
-
-# Bar plot
-myplot <- ggplot(vols2) +
+myplot <- ggplot(rangefilling2) +
   geom_bar(aes(x = tag, y = rangefilling), stat = "identity") +
   ylab("Proportion of Range filled") +
   xlab(paste(genus_name, "species")) +
@@ -79,4 +72,4 @@ myplot <- ggplot(vols2) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 # save
-ggsave(paste("Y:\\rangeFilling_", genus_tag, ".png", sep = ""), plot = myplot)
+ggsave(paste("Y:\\rangeFilling_", genus_name, ".png", sep = ""), plot = myplot)
