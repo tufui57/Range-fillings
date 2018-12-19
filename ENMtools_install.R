@@ -11,6 +11,11 @@ library(ggplot2)
 library(knitr)
 library(viridis)
 
+
+###################################################################################################
+### Install ecospat from a local file to solve the installation problem of ENMTools
+###################################################################################################
+
 library(devtools)
 install_local("C:\\Users\\nomur\\Downloads\\ecospat_3.0.tar.gz")
 

@@ -6,8 +6,7 @@ genus_name <- "Acaena"  # "Chionochloa"
 genus_tag <- "acaena" # "chion"
 
 library(dismo)
-
-source(".//Chionochloa niche evolution//00_DataPreparation.R")
+library(dplyr)
 
 # Load ensamble projection data
 scores.prob <- get(load(paste("Y://ensemblePredictionBinary_", genus_name, ".data", sep = "")))

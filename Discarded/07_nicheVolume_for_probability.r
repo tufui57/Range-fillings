@@ -7,17 +7,17 @@ genus_name <- "Chionochloa"
 library(dismo)
 
 source(".//Chionochloa niche evolution//00_DataPreparation.R")
-source(".//Chionochloa niche evolution//Niche filling//F_get_probability.r")
+load(".//Scores_landcover1km.data")
+
+source(".//functions//F02_create_raster_from_dataframe.R")
+source(".//Range fillings//F_get_probability.r")
 
 # Load ensamble projection data
-load(paste("Y://ensemblePrediction_", genus_tag, ".data", sep = ""))
+load(paste("Y://ensemblePrediction_", genus_tag, "12Dec.data", sep = ""))
 
 ####################################################################
 ### Potential niche volume
 ####################################################################
-
-# Import actual niche volume
-actualvol <- read.csv(paste("NicheVolume_age_", genus_tag, ".csv", sep = ""))
 
 # Create imaginary speices occurring at all cells in NZ
 prob1 <- get_occurrenceProbability_to_scores(spname[1], pred)
@@ -28,12 +28,21 @@ values(rasall) <- ifelse(is.na(values(ras1)), NA, 1000)
 # Calculate niche volume
 vold <- list()
 
-for(i in spname){
+ref <- raster(
+  # This raster was converted from pre-human raster with ArcGIS using "majority" method for raster value assignment
+  paste("Y://GIS map and Climate data//newzealandpotentialvegetatio1.bil", sep="")
+)
+
+for(i in gsub("_", ".", spname)){
   
-  prob1 <- get_occurrenceProbability_to_scores(i)
-  
+  prob1 <- get_occurrenceProbability_to_scores(i, pred, scores)
+    
   # dismo::nicheOverlap() requires raster of probability
-  rassp <- raster_from_dataframe(prob1)
+  rassp <- convert_dataframe_to_raster(ref, # reference raster
+                                       prob1, # dataframe
+                                       c("x","y"), # colnames of coordinates in "dat"
+                                       paste("prob_", i, sep="")
+                                       )
   
   tryCatch(
   {
