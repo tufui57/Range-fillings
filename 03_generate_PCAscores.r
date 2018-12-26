@@ -31,5 +31,5 @@ scores$post <- factor(ifelse(scores$currentLandcover == 1, "NF",
                              ))
 )
 
-### Import PCA scores
+### Save PCA scores
 save(scores, file = paste(".\\Scores_", genus_name, "_landcover.data", sep = ""))

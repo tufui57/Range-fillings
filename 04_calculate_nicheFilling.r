@@ -2,15 +2,16 @@
 ### Niche overlap
 ####################################################################
 
+library(dplyr)
 library(ecospat)
 library(raster)
 library(nichePlot)
 
-genus_name <- "Acaena"
+genus_name <- "Chionochloa"
 
 # Import species occurrence data
 # source(".//functions//F02_clean_up_species_records18Sep.R")
-load("Y://Scores_Acaena_landcover18sep.data")
+load(paste("Y://Scores_", genus_name,"_landcover.data", sep=""))
 
 # # Load ensamble projection data
 # load(paste("Y://ensemblePrediction_", genus_name, "12Dec.data", sep = ""))
@@ -24,13 +25,18 @@ load(paste("Y://ensemblePredictionBinary_", genus_name, ".data", sep = ""))
 ### Create background object comprising of all cells across NZ
 background <- scores[, c("x", "y", "PC1","PC2")]
 background[, "prob"] <- rep(1, nrow(background))
+# Change name to be consistent with prediction data
+colnames(scores)[grepl(paste("^", genus_name, sep=""), colnames(scores))] <- 
+  colnames(scores)[grepl(paste("^", genus_name, sep=""), colnames(scores))] %>% gsub("_", ".", .)
 
-spname <- colnames(scores)[grep(paste("^", genus_name, sep=""), colnames(scores))]
+spname <- names(pred)
 
 D <- list()
 
-for(i in 1:length(spname)){
-  # Prepare observed data
+for(i in 17:length(spname)){
+  
+  if(spname[i] %in% colnames(scores)[grepl(paste("^", genus_name, sep=""), colnames(scores))] == TRUE){
+    # Prepare observed data
   data1 = scores[scores[, spname[i]] == 1, ]
   
   # Prepare prediction data
@@ -49,9 +55,18 @@ for(i in 1:length(spname)){
   
   # Calculate niche overlap
   D[[i]] <- SchoenerD_ecospat(background, "PC1","PC2", data1, data3)
+  }else{
+    
+    # Either of prediction or occurrence data isn't provided.
+    D[[i]] <- "NO DATA"
+  }
+  
 }
 
-d2 <- sapply(D, "[[", 1) %>% t %>% data.frame
-d2$spname <- spname
+test <- sapply(D, "[[", 1) %>% sapply(., length)
+
+
+d2 <- sapply(D[which(test!=1)], "[[", 1) %>% t %>% data.frame
+d2$spname <- spname[which(test!=1)]
 
 write.csv(d2, file = paste(".//nichefilling_", genus_name, ".csv", sep=""))

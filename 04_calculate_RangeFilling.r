@@ -3,7 +3,6 @@
 #########################################################################
 
 genus_name <- "Acaena"  # "Chionochloa"
-genus_tag <- "acaena" # "chion"
 
 library(dismo)
 library(dplyr)
@@ -24,7 +23,7 @@ colnames(scores)[grep(paste("^", genus_name, sep = ""), colnames(scores))] <- gs
 spname <- names(scores.prob)
 
 #########################################################################
-### Range filling 
+### Range filling as the ratio of observed vs. predicted occurrences
 #########################################################################
 
 rangefilling <- list()
@@ -46,3 +45,10 @@ rangefilling3 <- data.frame(names(rangefilling), rangefilling2)
 colnames(rangefilling3) <- c("spname", "rangefilling", "occurrence", "predictedOccurrence")
 
 write.csv(rangefilling3, file = paste(".//rangefilling_", genus_name, ".csv", sep=""))
+
+###################################################################################################
+### Range filling as the overlap between observed and predicted occurrences by ecospat
+###################################################################################################
+
+# Go to ".//Rnage fillings//Ecospat_range_nicheOverlap_calculation.R"
+

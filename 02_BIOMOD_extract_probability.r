@@ -6,7 +6,7 @@ setwd("Y://BIOMOD for Grid2")
 library(dplyr)
 library(raster)
 
-genus_name <- "Acaena"
+genus_name <- "Chionochloa"
 
 ## Plot ensemble projection
 folders <- list.dirs("Y://BIOMOD for Grid2//", full.names = FALSE, recursive = F)
@@ -20,7 +20,11 @@ get_EMprojection <- function(spname, # species name
   
   files <- list.files(paste(".//", spname, "//proj_", proj.name, sep = ""), full.names = T)
   
-  # Probability prediction
+  if(length(files) == 0){
+    print("No model built")
+    proj <- "NA"
+  }else{
+      # Probability prediction
   if(binary == FALSE){
     if(sum(grepl("gri$", files)) == 1){
     proj <- (files %>% grepl("grd$", .) %>% files[.] %>% raster)
@@ -41,12 +45,15 @@ get_EMprojection <- function(spname, # species name
     proj <- "NA"
     }
   }
+  }
   
   return(proj)
 }
 
 # A. rorida has no model due to the small sample size
-pred <- lapply(folders[-17], get_EMprojection, binary = FALSE, proj.name = "7Nov18_ensamble")
-names(pred) <- folders[-17]
+pred <- lapply(folders, get_EMprojection, binary = TRUE, proj.name = "7Nov18_ensamble")
+names(pred) <- folders
 
-save(pred, file = paste("Y://ensemblePrediction_", genus_name, "12Dec.data", sep = ""))
+save(pred, file = paste("Y://ensemblePredictionBinary_", genus_name, ".data", sep = ""))
+
+
