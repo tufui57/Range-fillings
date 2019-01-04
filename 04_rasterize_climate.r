@@ -7,12 +7,12 @@ library(dplyr)
 # Import function
 source(".//functions//F04_convert_occurrencePoints_to_raster.R")
 
-genus_name <- "Acaena"
+genus_name <- "Chionochloa"
 
 # Reference raster
 ref.raster <- raster("Y://GIS map and Climate data//newzealandpotentialvegetatio1.bil")
 # Import PCA scores
-load(paste(".\\Scores_Acaena_landcover.data", sep = ""))
+load(paste(".\\Scores_", genus_name, "_landcover.data", sep = ""))
 
 ####################################################
 ### Create climate space raster 
@@ -139,11 +139,7 @@ for(i in spname){
 # Calculate niche filling
 ####################################################
 
-# The number of predicted occurrence cells on climate space
-sapply(ras, function(d){
-  sum(values(d), na.rm = T)
-})
-
+# Change species name separator
 names(niche.ras) <- names(niche.ras) %>% gsub("_", ".", .)
 
 # Niche filling
@@ -153,7 +149,5 @@ nichefilling <- sapply(niche.ras[names(pred2)], function(d){
   sum(values(d), na.rm = T)
 })
 
-# The number of occurrence cells on geographycal space
-sapply(sp, nrow)
-
-write.csv(nichefilling, file = "tes.csv")
+# Save the niche filling
+write.csv(nichefilling, file = paste("NicheFilling_", genus_name, ".csv", sep=""))
