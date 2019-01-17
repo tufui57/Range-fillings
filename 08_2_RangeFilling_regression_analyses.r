@@ -68,6 +68,13 @@ dat <- rbind(dat.genus[[1]][, c("rangefilling", "occurrence", "nichefilling", "m
 summary(lm(dat$rangefilling ~ dat$mean.sai + dat$dispersal))
 
 ########################################################################################################
+### Range vs. niche filling
+########################################################################################################
+
+summary(lm(dat$rangefilling ~ dat$nichefilling))
+
+
+########################################################################################################
 ### Isn't the significance just because range filling and SAI are based on climate?
 ########################################################################################################
 
@@ -92,11 +99,26 @@ vif(lm(test$rangefilling ~ test$median.of.temp + test$median.of.prec + test$mean
 
 # Range filling ~ phylogeny
 summary(lm(test$rangefilling ~ test$speciesAge))
-# Niche filling ~ phylogeny
-summary(lm(test$nichefilling ~ test$speciesAge))
 
 # Range size ~ phylogeny
 summary(lm(test$occurrence ~ test$speciesAge))
+
+### Each genus
+## Acaena
+# Range filling ~ phylogeny
+summary(lm(test[1:18,]$rangefilling ~ test[1:18,]$speciesAge))
+
+# Range size ~ phylogeny
+summary(lm(test[1:18,]$occurrence ~ test[1:18,]$speciesAge))
+
+## Chion
+# Range filling ~ phylogeny
+summary(lm(test[19:nrow(test),]$rangefilling ~ test[19:nrow(test),]$speciesAge))
+
+# Range size ~ phylogeny
+summary(lm(test[1:18,]$occurrence ~ test[1:18,]$speciesAge))
+
+
 
 ########################################################################################################
 ### Does phylogeny explain niche filling better than current niche volume?
@@ -106,3 +128,6 @@ summary(lm(test$niche_volume ~ test$speciesAge))
 
 # Niche filling ~ phylogeny
 summary(lm(test$nichefilling ~ test$speciesAge))
+
+
+

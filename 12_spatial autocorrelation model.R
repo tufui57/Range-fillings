@@ -20,14 +20,23 @@ spname <- colnames(scores)[grep("^Acaena", colnames(scores))]
 sar <- list()
 for(i in spname){
   form <- formula(paste(i, "~ PC1 + PC2 + sai"))
-   sar[[i]] <- errorsarlm(form, data = scores.sai, nblist, zero.policy=TRUE)
+   sar[[i]] <- errorsarlm(form, data = scores.sai, nblist, , zero.policy=TRUE)
    summary(sar[i])
  }
 
+# Save the results
+save(sar, file = "SARmodels_Acaena.data")
 
-# data(oldcol)
-# lw <- nb2listw(COL.nb, style="W")
-# ev <- eigenw(similar.listw(lw))
-# COL.errW.eig <- errorsarlm(CRIME ~ INC + HOVAL, data=COL.OLD,
-#                            lw, quiet=FALSE, control=list(pre_eig=ev))
-# summary(COL.errW.eig)
+### Residual plot
+# Get residuals
+lapply(sar, residuals.sarlm)
+
+# If the model fitting is high, standerdized residuals must evenly distribute.
+lapply(sar, function(x){
+  plot(predict.sarlm(x), residuals.sarlm(x))
+  })
+
+### VIF
+library(car)
+vif(lm(scores.sai$sai ~ scores.sai$PC1 + scores.sai$PC2))
+summary((lm(scores.sai$sai ~ scores.sai$PC1 + scores.sai$PC2)))
