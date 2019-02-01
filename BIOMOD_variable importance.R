@@ -1,42 +1,53 @@
-# Load BIOMOD.model.out
-mod <- load(paste(".\\", spname, "\\", spname, ".", folder.name, ".models.out",
-                  sep = "")
-)
-model <- get(mod)
+library(dplyr)
+library(biomod2)
 
-
-variables_importance(model)
-
-
-## Ensemble modelling
-myBiomodEM <- BIOMOD_EnsembleModeling(modeling.output = model,
-                                      chosen.models = 'all',
-                                      em.by = 'all',
-                                      eval.metric = c('TSS'),
-                                      eval.metric.quality.threshold = c(0.7),
-                                      # Models.eval.meth must be one or two, because temporary raster folder can't store data of models for more than 3 evaluation metrics.
-                                      # If you run this on computer with bigger storage for the folder,  it may run without the error. (In writeBin(as.vector(v[start:end, ]), x@file@con, size = x@file@dsize) :problem writing to connection)
-                                      models.eval.meth = c('TSS'), #, 'ROC', 'ACCURACY'
-                                      prob.mean = TRUE,
-                                      prob.cv = FALSE,
-                                      prob.ci = FALSE,
-                                      prob.ci.alpha = 0.05,
-                                      prob.median = FALSE,
-                                      committee.averaging = FALSE,
-                                      prob.mean.weight = TRUE,
-                                      prob.mean.weight.decay = 'proportional'
-)
-
-
-
+genus_name = "Chionochloa"
 
 ## PLOTS THE PROJECTIONS
 setwd("Y:\\BIOMOD for Grid2")
 # Get folder names
 folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus_name, .) %>% list.dirs(getwd(), full.names = FALSE, recursive = F)[.]
 
-spname <- folders[1] 
-folder.name = "SAI_15Jan19"
-BIOMODproj.name = "SAI_15Jan19"
-ensambleProj.name = "SAI_15Jan19_ensamble"
+# Names of BIOMOD models
+folder.name = "SAI_22Jan19"
+BIOMODproj.name = "SAI_22Jan19"
+
+# Calculate rank
+ave.imp.rank <- list()
+
+for(i in folders){
+  
+  try(
+    {
+      # Load BIOMOD.model.out
+      mod <- load(paste(".\\", i, "\\", i, ".", folder.name, ".models.out",
+                        sep = "")
+      )
+      model <- get(mod)
+      
+      # Extract variable importances
+      imp <- as.data.frame(model@variables.importances@val)
+      
+      # Rank
+      imp.rank <- apply(-imp, 2, rank, ties.method = "min")
+      
+      # Averaged rank for each variable
+      ave.imp.rank[[i]] <- apply(imp.rank, 1, mean)
+    }
+    
+  )
+
+}
+
+# Create a data frame
+ave.imp.rank.data <- do.call(rbind, ave.imp.rank)
+
+write.csv(ave.imp.rank.data, file = paste("Y://averaged_rank_importance_", genus_name, ".csv", sep=""))
+
+# Rank the averaged rank
+rank.ave <- do.call(rbind, lapply(ave.imp.rank, rank, ties.method = "min"))
+
+apply(rank.ave, 2, mean)
+
+
 

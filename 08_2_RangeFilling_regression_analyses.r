@@ -68,14 +68,8 @@ dat <- rbind(dat.genus[[1]][, c("rangefilling", "occurrence", "nichefilling", "m
 summary(lm(dat$rangefilling ~ dat$mean.sai + dat$dispersal))
 
 ########################################################################################################
-### Range vs. niche filling
-########################################################################################################
-
-summary(lm(dat$rangefilling ~ dat$nichefilling))
-
-
-########################################################################################################
 ### Isn't the significance just because range filling and SAI are based on climate?
+### Test the relationship between range filling and current climate
 ########################################################################################################
 
 # Range filling is calculated based on climate. 
@@ -96,38 +90,35 @@ vif(lm(test$rangefilling ~ test$median.of.temp + test$median.of.prec + test$mean
 ########################################################################################################
 ### Does phylogeny explain Range or niche filling better?
 ########################################################################################################
+# Range filling is calculated based on climate. 
+# To test this hypothesis, use another something related to climate.
 
-# Range filling ~ phylogeny
-summary(lm(test$rangefilling ~ test$speciesAge))
+aca <- read.csv("Y:\\Analysis_acaena.csv")
+aca$spname <- gsub("_", "\\.", aca$spname)
 
-# Range size ~ phylogeny
-summary(lm(test$occurrence ~ test$speciesAge))
+aca2 <- merge(dat.genus[[1]], aca, by.x="X", by.y = "spname")
+
+write.csv(aca2, file = "Analysis_Acaena_SAI.csv")
 
 ### Each genus
 ## Acaena
 # Range filling ~ phylogeny
-summary(lm(test[1:18,]$rangefilling ~ test[1:18,]$speciesAge))
+summary(lm(aca2$rangefilling ~ aca2$speciesAge))
 
 # Range size ~ phylogeny
-summary(lm(test[1:18,]$occurrence ~ test[1:18,]$speciesAge))
+summary(lm(aca2$occurrence ~ aca2$speciesAge))
 
 ## Chion
+
+chi <- read.csv("Y:\\Analysis_chion.csv")
+chi$spname <- gsub("_", "\\.", chi$spname)
+
+chi2 <- merge(dat.genus[[2]], chi, by = "spname")
+
+write.csv(chi2, file = "Analysis_Chionochloa_SAI.csv")
+
 # Range filling ~ phylogeny
-summary(lm(test[19:nrow(test),]$rangefilling ~ test[19:nrow(test),]$speciesAge))
+summary(lm(chi2$rangefilling ~ chi2$speciesAge))
 
 # Range size ~ phylogeny
-summary(lm(test[1:18,]$occurrence ~ test[1:18,]$speciesAge))
-
-
-
-########################################################################################################
-### Does phylogeny explain niche filling better than current niche volume?
-########################################################################################################
-# Niche volume ~ phylogeny
-summary(lm(test$niche_volume ~ test$speciesAge))
-
-# Niche filling ~ phylogeny
-summary(lm(test$nichefilling ~ test$speciesAge))
-
-
-
+summary(lm(chi2$occurrence ~ chi2$speciesAge))

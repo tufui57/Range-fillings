@@ -35,8 +35,7 @@ file.remove(tempFilePath)
 ########################        5km grid data import
 ##################################################################################################################
 # character string of target genus name
-genus_name <- "Acaena"
-# genus_name <- "Chionochloa"
+genus_name <- "Chionochloa"
 
 ### Set arguments
 # data frame of occurrence data and climate data
@@ -69,9 +68,11 @@ if(file.exists(datapath)){
 # Change colmun name of coordinates 
 names(climate.occ)[names(climate.occ) %in% c("x","y")] <- c("NZTMlon", "NZTMlat")
 
-
+##############################################################################
 ### Add LGM climate to bioclim rasters
-load("SAI_5km_current_4var.data")
+##############################################################################
+nam <- load("SAI_5km_currentInCurrent_20kmWindow_4var.data")
+sai <- get(nam)
 load("Scores_Acaena_landcover5km.data")
 
 source(".//functions//F02_create_raster_from_dataframe.R")
@@ -82,10 +83,23 @@ scores.sai <- cbind(scores, unlist(sai))
 sai.raster <- convert_dataframe_to_raster(ref.raster, scores.sai, c("x","y"), "unlist(sai)")
 names(sai.raster) <- "sai"
 
+##############################################################################
+### Add SAI difference between LGM and current to bioclim rasters
+##############################################################################
+
+sai.dif <- read.csv("SAI_current_LGM_dif.csv")
+# Convert dataframe to raster
+sai.dif.raster <- convert_dataframe_to_raster(ref.raster, sai.dif, c("x","y"), "dif.sai20")
+names(sai.dif.raster) <- "dif.sai20"
+
+
 # Create raster stack of bioclim and SAI rasters
 bio.ras <- stack(bioNZ)
-data.ras <- addLayer(bio.ras, sai.raster)
+data.ras <- addLayer(bio.ras, c(sai.raster, sai.dif.raster))
 
+##############################################################################
+### Collate data
+##############################################################################
 # Get species name
 spname <- colnames(climate.occ)[grepl(genus_name, colnames(climate.occ))]
 
@@ -105,7 +119,7 @@ if (genus_name == "Acaena"){
 for(i in spname){climate.occ3[is.na(climate.occ3[, i]), i] <- 0}
 
 # Environmental variables extracted from BIOCLIM and converted into NZTM.
-myExpl <- stack(data.ras[[c("bioclim1", "bioclim6", "bioclim12", "bioclim15", "sai")]])
+myExpl <- stack(data.ras[[c("bioclim1", "bioclim6", "bioclim12", "bioclim15", "sai", "dif.sai20")]])
 
 ## Stay in a specific working directory, because all data needed for restoration is saved there.
 if(dir.exists("Y://BIOMOD for Grid2") == FALSE){
@@ -118,12 +132,9 @@ setwd("Y://BIOMOD for Grid2")
 ## Takes a while to run... Don't run on laptop! Slow!
 #########################################################
 
-# try(lapply(spname, runBiomod, data = climate.occ3, myExpl = myExpl, folder.name = "7Nov18"),
-#     silent = FALSE)
-
 for(i in spname){
   tryCatch(
-    runBiomod(i, data = climate.occ3, myExpl = myExpl, folder.name = "SAI_15Jan19"),
+    runBiomod(i, data = climate.occ3, myExpl = myExpl, folder.name = "SAI_22Jan19"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -151,8 +162,8 @@ folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus
 for(i in folders){
   tryCatch(
     biomodProjection_fromSavedBiomodModels(i,
-                                           modelname = "SAI_15Jan19",
-                                           proj.name = "SAI_15Jan19"),
+                                           modelname = "SAI_22Jan19",
+                                           proj.name = "SAI_22Jan19"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -167,7 +178,7 @@ for(i in folders){
 myBiomodModelOut <- list()
 for(i in folders){
   myBiomodModelOut[[i]] <- tryCatch(
-    load(paste("Y://BIOMOD for Grid2//", i, "//", i, ".SAI_15Jan19.models.out", sep=""))
+    load(paste("Y://BIOMOD for Grid2//", i, "//", i, ".SAI_22Jan19.models.out", sep=""))
   )
 }
 
@@ -225,7 +236,7 @@ projectionPlot <- function(spname, # species name
 
 for(i in folders){
   tryCatch(
-    projectionPlot(i, proj.name = "SAI_15Jan19"),
+    projectionPlot(i, proj.name = "SAI_22Jan19"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -301,7 +312,7 @@ ensembleModelling_projection <- function(spname, # species name
 for(i in folders){
   tryCatch(
     ensembleModelling_projection(i, 
-                                 folder.name = "SAI_15Jan19", BIOMODproj.name = "SAI_15Jan19", ensambleProj.name = "SAI_15Jan19_ensamble"),
+                                 folder.name = "SAI_22Jan19", BIOMODproj.name = "SAI_22Jan19", ensambleProj.name = "SAI_22Jan19_ensamble"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -335,7 +346,7 @@ EMprojectionPlot <- function(spname, # species name
 # If there are species whose BIOMOD failed and no grd file was generated, you don't get the plot.
 for(i in folders){
   tryCatch(
-    EMprojectionPlot(i, proj.name = "SAI_15Jan19_ensamble"),
+    EMprojectionPlot(i, proj.name = "SAI_22Jan19_ensamble"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -350,7 +361,7 @@ for(i in folders){
 myBiomodModelOut <- list()
 for(i in folders){
   myBiomodModelOut[[i]] <- tryCatch(
-    load(paste("Y://BIOMOD for Grid2//", i, "//", i, ".SAI_15Jan19_ensemble.models.out", sep=""))
+    load(paste("Y://BIOMOD for Grid2//", i, "//", i, ".SAI_22Jan19_ensemble.models.out", sep=""))
   )
 }
 
