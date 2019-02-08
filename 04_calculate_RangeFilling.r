@@ -6,9 +6,10 @@ genus_name <- "Acaena"  # "Chionochloa"
 
 library(dismo)
 library(dplyr)
+proj.name = "SAI_cinl7Feb19_ensamble"
 
 # Load ensamble projection data
-scores.prob <- get(load(paste("Y://ensemblePredictionBinary_", genus_name, ".data", sep = "")))
+scores.prob <- get(load(paste("Y://ensemblePredictionBinary_", genus_name, proj.name,".data", sep = "")))
 
 # Load PCA scores of occurrence data
 if(file.exists(paste(".\\Scores_", genus_name, "_landcover.data", sep = "")) == FALSE){
@@ -44,7 +45,7 @@ rangefilling2 <- do.call(rbind, rangefilling)
 rangefilling3 <- data.frame(names(rangefilling), rangefilling2)
 colnames(rangefilling3) <- c("spname", "rangefilling", "occurrence", "predictedOccurrence")
 
-write.csv(rangefilling3, file = paste(".//rangefilling_", genus_name, ".csv", sep=""))
+write.csv(rangefilling3, file = paste("Y://rangefilling_", genus_name, proj.name,".csv", sep=""))
 
 ###################################################################################################
 ### Range filling as the overlap between observed and predicted occurrences by ecospat

@@ -1,7 +1,7 @@
 library(dplyr)
 library(biomod2)
 
-genus_name = "Chionochloa"
+genus_name = "Acaena"
 
 ## PLOTS THE PROJECTIONS
 setwd("Y:\\BIOMOD for Grid2")
@@ -9,8 +9,8 @@ setwd("Y:\\BIOMOD for Grid2")
 folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus_name, .) %>% list.dirs(getwd(), full.names = FALSE, recursive = F)[.]
 
 # Names of BIOMOD models
-folder.name = "SAI_22Jan19"
-BIOMODproj.name = "SAI_22Jan19"
+folder.name = "SAI_cinl7Feb19"
+BIOMODproj.name = "SAI_cinl7Feb19"
 
 # Calculate rank
 ave.imp.rank <- list()
@@ -42,7 +42,7 @@ for(i in folders){
 # Create a data frame
 ave.imp.rank.data <- do.call(rbind, ave.imp.rank)
 
-write.csv(ave.imp.rank.data, file = paste("Y://averaged_rank_importance_", genus_name, ".csv", sep=""))
+write.csv(ave.imp.rank.data, file = paste("Y://averaged_rank_importance_", genus_name, folder.name, ".csv", sep=""))
 
 # Rank the averaged rank
 rank.ave <- do.call(rbind, lapply(ave.imp.rank, rank, ties.method = "min"))

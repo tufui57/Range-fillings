@@ -15,7 +15,7 @@ library(dplyr)
 library(biomod2)
 
 # Load functions to develop BIOMOD
-source(".\\Range fillings\\F_Create_Package_BIOMOD_test.r")
+source("C:\\Users\\nomur\\Documents\\Range fillings\\F_Create_Package_BIOMOD_test.r")
 
 ############ NOTE ########################################################################
 # BIOMOD_Projection() & BIOMOD_Modeling() write raster files in tempdir()
@@ -30,7 +30,7 @@ file.remove(tempFilePath)
 ########################        5km grid data import
 ##################################################################################################################
 # character string of target genus name
-genus_name <- "Chionochloa"
+genus_name <- "Acaena"
 
 ### Set arguments
 # data frame of occurrence data and climate data
@@ -48,7 +48,7 @@ ref.raster <- raster(
 )
 proj4stringNZTM <- proj4string(ref.raster)
 # Worldclim ver.1.4
-path <-"Y:\\GIS map and Climate data\\worldclim\\bio_411"
+path <-"Y:\\GIS map and Climate data\\worldclim\bio_411"
 source(".\\functions\\F01_project_resample_WORLDCLIM.R")
 
 
@@ -133,9 +133,9 @@ setwd("Y://BIOMOD for Grid2")
 # NOTE; default setting has 5 fold cross validation with 75% training data.
 # You can change the arguments accessing .\\Range fillings\\F_Create_Package_BIOMOD.r"
 
-for(i in spname){
+for(i in spname[1]){
   tryCatch(
-    runBiomod(i, data = climate.occ3, myExpl = myExpl, folder.name = "SAI_cinl8Feb19"),
+    runBiomod(i, data = climate.occ3, myExpl = myExpl, folder.name = "test2nd8Feb19"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -153,11 +153,11 @@ folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus
 ## Takes a while to run... slow but wait!
 #########################################################
 
-for(i in folders){
+for(i in folders[1]){
   tryCatch(
     biomodProjection_fromSavedBiomodModels(i,
-                                           modelname = "SAI_cinl8Feb19",
-                                           proj.name = "SAI_cinl8Feb19"),
+                                           modelname = "test2nd8Feb19",
+                                           proj.name = "test2nd8Feb19"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -189,9 +189,9 @@ projectionPlot <- function(spname, # species name
 }
 
 
-for(i in folders){
+for(i in folders[1]){
   tryCatch(
-    projectionPlot(i, proj.name = "SAI_cinl8Feb19"),
+    projectionPlot(i, proj.name = "test2nd8Feb19"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -265,10 +265,10 @@ ensembleModelling_projection <- function(spname, # species name
 }
 
 # If there are species whose BIOMOD failed and no grd file was generated, you don't get the prediction.
-for(i in folders){
+for(i in folders[1]){
   tryCatch(
     ensembleModelling_projection(i, 
-                                 folder.name = "SAI_cinl8Feb19", BIOMODproj.name = "SAI_cinl8Feb19", ensambleProj.name = "SAI_cinl8Feb19_ensamble"),
+                                 folder.name = "test2nd8Feb19", BIOMODproj.name = "test2nd8Feb19", ensambleProj.name = "test2nd8Feb19_ensamble"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -300,10 +300,52 @@ EMprojectionPlot <- function(spname, # species name
 }
 
 # If there are species whose BIOMOD failed and no grd file was generated, you don't get the plot.
-for(i in folders){
+for(i in folders[1]){
   tryCatch(
-    EMprojectionPlot(i, proj.name = "SAI_cinl8Feb19_ensamble"),
+    EMprojectionPlot(i, proj.name = "test2nd8Feb19_ensamble"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
 }
+
+
+
+# ### Error for project "SAI_cInl7Feb19"
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Build Ensemble Models -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+#   
+#   ! all models available will be included in ensemble.modeling
+# > Evaluation & Weighting methods summary :
+#   TSS over 0.7
+# 
+# 
+# > mergedAlgo_mergedRun_mergedData ensemble modeling
+# ! No models kept due to treshold filtering... Ensemble Modeling was skip!ERROR : attempt to set an attribute on NULL 
+
+
+
+#################################################################################################################
+########################   Model evaluations     
+#################################################################################################################
+
+# Load saved BIOMOD object. 
+# Use get(model.out file name). Not just load()
+myBiomodModelOut <- list()
+for(i in folders){
+  myBiomodModelOut[[i]] <- tryCatch(
+    load(paste("Y://BIOMOD for Grid2//", i, "//", i, ".SAI_cinl7Feb19.models.out", sep=""))
+  )
+}
+
+### Evaluation
+
+# Display TSS of each model in BIOMOD
+lapply(myBiomodModelOut, function(x){
+  print(x)
+  get_evaluations(get(x))
+}
+)
+
+# Models whose TSS > 0.7 are used to build ensemble models.
+# The argument "eval.metric.quality.threshold" controls this.
+# Full models, the models trained on 100% of given data, tend to have higher TSS than models built on parts of data.
+# Thus, if the argument "do.full.model" = FALSE in BIOMOD_modelling(), many species get no ensemble models because no models have TSS > 0.7.

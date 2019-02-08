@@ -40,14 +40,14 @@ runBiomod <- function(
                                      models = c('MARS', 'RF', 'ANN', 'GBM', 'GAM', 'GLM', 'SRE' #,'CTA', 'FDA',
                                                 ),
                                      models.options = myBiomodOption,
-                                     NbRunEval = 3, # How many times evaluation is implemented.
+                                     NbRunEval = 5, # How many times evaluation is implemented.
                                      DataSplit = 75, # Split data for training models. The rest of data will be used for validation.
                                      VarImport = 100,
                                      
                                      # For the difference between all the evaluation methods. See https://rdrr.io/cran/biomod2/man/BIOMOD_Modeling.html
                                      models.eval.meth = c('TSS'),
                                      rescal.all.models = FALSE,
-                                     do.full.models = FALSE,
+                                     do.full.models = TRUE,
                                      modeling.id = folder.name
                                      )
 

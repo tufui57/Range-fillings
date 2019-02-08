@@ -79,29 +79,83 @@ for(i in spname){climate.occ3[is.na(climate.occ3[, i]), i] <- 0}
 myExpl <- stack(data.ras[c("bioclim1", "bioclim6", "bioclim12", "bioclim15")])
 
 #########################################################
-## Takes a while to run... Don't run on laptop! Slow!
+## Test
 #########################################################
 
 setwd("Y://BIOMOD for Grid2")
 
 ## test
-i = spname[10]
-data = climate.occ3
-folder.name = "blockCV_01Feb19"
+i=10
+sp = spname[10]
+folder.name = "blockCV_04Feb19"
 
 ## presence/absence vector
-spData <- data[, grepl(i, colnames(data))]
+spData <- climate.occ3[, grepl(sp, colnames(climate.occ3))]
+pa_data.sp <- cbind(spData, climate.occ3[, c("NZTMlon", "NZTMlat")])
+colnames(pa_data.sp)[-1] <- c("x","y")
+pa_data.sp <- SpatialPointsDataFrame(pa_data.sp[,c("x", "y")], pa_data.sp, proj4string=crs(bioclim.ras))
 
-## SET THE NAME - THIS IS A CHARACTER STRING THAT JUST HAS THE NAME OF THE SPECIES
-##  USED FOR NAMING FILES AND FIGS
-myRespName <- i
+## response name = species name
+myRespName <- sp
 
 ## SET THE RESPONSE VARIABLE
 myResp <- as.numeric(spData)
 
 ## SET THE COORDINATES
-myRespXY <- data[, c("NZTMlon", "NZTMlat")]
+myRespXY <- climate.occ3[, c("NZTMlon", "NZTMlat")]
 
+
+##################################################################################
+## Visualize spatial autocorrelation
+##################################################################################
+
+bioclim.ras <- raster::brick(data.ras[c("bioclim1","bioclim6","bioclim12","bioclim15")])
+
+sac.sp <- spatialAutoRange(rasterLayer = bioclim.ras, # raster file
+                           sampleNumber = 50000, # number of cells to be used
+                           doParallel = TRUE,
+                           showPlots = TRUE)
+plot(sac.sp$variograms[[1]])
+
+# spatial blocking by specified range with random assignment
+sb.sp <- spatialBlock(speciesData = pa_data.sp,
+                      species = "spData",
+                      rasterLayer = bioclim.ras,
+                      theRange = sac.sp$range, # size of the blocks
+                      k = 5,
+                      selection = "random",
+                      iteration = 250, # find evenly dispersed folds
+                      biomod2Format = TRUE,
+                      xOffset = 0, # shift the blocks horizontally
+                      yOffset = 0)
+
+
+
+# adding points on saptialBlock plot
+sb.sp$plots + geom_point(data = as.data.frame(coordinates(pa_data.sp)), aes(x=x, y=y), alpha=0.6)
+
+##################################################################################
+## Find the best number of folds and block size
+##################################################################################
+# What's the best?
+
+# explore generated folds
+foldExplorer(blocks = sb.sp, 
+             rasterLayer = bioclim.ras, 
+             speciesData = pa_data.sp)
+
+# add species data to add them on the map
+rangeExplorer(rasterLayer = bioclim.ras,
+              speciesData = pa_data.sp,
+              species = "spData",
+              rangeTable = NULL,
+              minRange = 100000, # limit the search domain
+              maxRange = 1000000)
+
+
+#########################################################
+## BIOMOD
+#########################################################
 
 ## FORMAT THE DATA FOR BIOMOD
 ## USING THE DEFAULTNAMES FOR VARIABLES THAT WE HAVE SPECIFIED ABOVE
@@ -115,43 +169,11 @@ myBiomodData <- BIOMOD_FormatingData(
 ## DEFINE THE MODEL OPTIONS: BELOW SETS THEM TO ALLTHE DEFAULTS
 myBiomodOption <- BIOMOD_ModelingOptions()
 
-bioclim.ras <- raster::brick(data.ras[c("bioclim1","bioclim6","bioclim12","bioclim15")])
-
-sac <- spatialAutoRange(rasterLayer = bioclim.ras, # raster file
-                 sampleNumber = 50000, # number of cells to be used
-                 doParallel = TRUE,
-                 showPlots = TRUE)
-plot(sac$variograms[[1]])
-
-# spatial blocking by specified range with random assignment
-sb.sp <- spatialBlock(speciesData = spData,
-                   species = "Species",
-                   rasterLayer = bioclim.ras,
-                   theRange = , # size of the blocks
-                   k = 5,
-                   selection = "random",
-                   iteration = 250, # find evenly dispersed folds
-                   biomod2Format = TRUE,
-                   xOffset = 0, # shift the blocks horizontally
-                   yOffset = 0)
-
-
-# adding points on saptialBlock plot
-sb$plots + geom_point(data = as.data.frame(coordinates(pa_data)), aes(x=x, y=y), alpha=0.6)
-
 # 2. Defining the folds for DataSplitTable
 # note that biomodTable should be used here not folds
-DataSplitTable <- sb$biomodTable # use generated folds from spatialBlock in previous section
+DataSplitTable <- sb.sp$biomodTable # use generated folds from spatialBlock in previous section
 
-# # 4. Model fitting
-# myBiomodModelOut.block <- BIOMOD_Modeling( myBiomodData,
-#                                      models = c('GLM','MARS','GBM'),
-#                                      models.options = myBiomodOption,
-#                                      DataSplitTable = DataSplitTable, # blocking folds
-#                                      VarImport = 100,
-#                                      models.eval.meth = c('ROC'),
-#                                      do.full.models=FALSE,
-#                                      modeling.id="test")
+
 ## RUN THE MODELS
 myBiomodModelOut <- BIOMOD_Modeling(myBiomodData,
                                     models = c('MARS', 'RF', 'ANN', 'GBM', 'GAM', 'GLM', 'SRE'
@@ -163,10 +185,51 @@ myBiomodModelOut <- BIOMOD_Modeling(myBiomodData,
                                     
                                     # For the difference between all the evaluation methods. See https://rdrr.io/cran/biomod2/man/BIOMOD_Modeling.html
                                     models.eval.meth = c('TSS'),
-                                    rescal.all.models = FALSE,
-                                    do.full.models = TRUE,
+                                    do.full.models = FALSE,
                                     modeling.id = folder.name
 )
+
+# 5. Model evaluation
+# get all models evaluation
+myBiomodModelEval <- get_evaluations(myBiomodModelOut)
+myBiomodModelEval["TSS","Testing.data",,,]
+
+########################################################
+# Comapre the importance with non spatial models
+########################################################
+
+## PLOTS THE PROJECTIONS
+setwd("Y:\\BIOMOD for Grid2")
+# Get folder names
+folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus_name, .) %>% list.dirs(getwd(), full.names = FALSE, recursive = F)[.]
+
+# Names of BIOMOD models
+folder.name = "7Nov18"
+BIOMODproj.name = folder.name
+
+# Load BIOMOD.model.out
+mod <- load(paste(".\\", folders[i], "\\", folders[i], ".", folder.name, ".models.out",
+                  sep = "")
+)
+model <- get(mod)
+
+# Extract variable importances
+imp <- as.data.frame(model@variables.importances@val)
+
+# Rank
+imp.rank <- apply(-imp, 2, rank, ties.method = "min")
+
+### Averaged ranks of Variable importance
+# non spatial BIOMOD
+apply(imp.rank, 1, mean)
+
+### blockCV
+# Extract variable importances
+imp.bl <- as.data.frame(myBiomodModelOut@variables.importances@val)
+# Rank
+imp.rank.bl <- apply(-imp.bl, 2, rank, ties.method = "min")
+
+apply(imp.rank.bl, 1, mean)
 
 ##########################################################
 ## NOTE! MAKE SURE TEMPORARY RASTER FOLDER IS NOT FULL! ##
