@@ -51,9 +51,9 @@ get_EMprojection <- function(spname, # species name
 }
 
 # A. rorida has no model due to the small sample size
-pred <- lapply(folders, get_EMprojection, binary = TRUE, proj.name = "SAI_cinl7Feb19_ensamble")
+pred <- lapply(folders, get_EMprojection, binary = TRUE, proj.name = "SAI_cinl8Feb19_ensamble")
 names(pred) <- folders
-proj.name = "SAI_cinl7Feb19_ensamble"
+proj.name = "SAI_cinl8Feb19_ensamble"
 
 save(pred, file = paste("Y://ensemblePredictionBinary_", genus_name, proj.name,".data", sep = ""))
 

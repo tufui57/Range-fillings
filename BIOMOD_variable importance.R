@@ -1,7 +1,7 @@
 library(dplyr)
 library(biomod2)
 
-genus_name = "Acaena"
+genus_name = "Chionochloa"
 
 ## PLOTS THE PROJECTIONS
 setwd("Y:\\BIOMOD for Grid2")
@@ -9,8 +9,8 @@ setwd("Y:\\BIOMOD for Grid2")
 folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus_name, .) %>% list.dirs(getwd(), full.names = FALSE, recursive = F)[.]
 
 # Names of BIOMOD models
-folder.name = "SAI_cinl7Feb19"
-BIOMODproj.name = "SAI_cinl7Feb19"
+folder.name = "SAI_cinl8Feb19"
+BIOMODproj.name = "SAI_cinl8Feb19"
 
 # Calculate rank
 ave.imp.rank <- list()

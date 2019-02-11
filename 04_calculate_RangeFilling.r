@@ -6,16 +6,26 @@ genus_name <- "Acaena"  # "Chionochloa"
 
 library(dismo)
 library(dplyr)
-proj.name = "SAI_cinl7Feb19_ensamble"
+proj.name = "SAI_cinl8Feb19_ensamble"
+resolution = 5
 
 # Load ensamble projection data
 scores.prob <- get(load(paste("Y://ensemblePredictionBinary_", genus_name, proj.name,".data", sep = "")))
 
 # Load PCA scores of occurrence data
-if(file.exists(paste(".\\Scores_", genus_name, "_landcover.data", sep = "")) == FALSE){
-  source(".//Range fillings//03_generate_PCAscores.r")
+if(resolution == 1){
+  if(file.exists(paste(".\\Scores_", genus_name, "_landcover.data", sep = "")) == FALSE){
+  source("C:\\Users\\nomur\\Documents\\Range fillings\\03_generate_PCAscores.r")
 }else{
   load(paste(".\\Scores_", genus_name, "_landcover.data", sep = "")) 
+}
+
+}else{
+  if(file.exists(paste(".\\Scores_", genus_name, "_landcover5km.data", sep = "")) == FALSE){
+    source("C:\\Users\\nomur\\Documents\\Range fillings\\03_generate_PCAscores_5km.r")
+  }else{
+    load(paste(".\\Scores_", genus_name, "_landcover5km.data", sep = "")) 
+  }
 }
 
 colnames(scores)[grep(paste("^", genus_name, sep = ""), colnames(scores))] <- gsub("_", "\\.", 
