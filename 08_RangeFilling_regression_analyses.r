@@ -6,12 +6,13 @@ proj.name = "SAI_cinl8Feb19_ensamble"
 source(".//Chionochloa niche evolution//00_DataPreparation.R")
 
 # Load range filling
-rangefilling3 <- read.csv(paste("Y://rangefilling_", genus_name, proj.name,".csv", sep=""))
+rangefilling <- read.csv(paste("Y://rangefilling_", genus_name, proj.name,".csv", sep=""))
 # Load niche volume
 vols <- read.csv(paste("Y://NicheVolume_age_", genus_tag, ".csv", sep = ""))
 vols$spname <- gsub("_", "\\.", vols$spname)
+
 # Bind niche volume to range filling
-dat <- merge(rangefilling3, vols, by = "spname")
+dat <- merge(rangefilling, vols, by = "spname")
 
 ##############################################################
 ### Range filling ~ species age

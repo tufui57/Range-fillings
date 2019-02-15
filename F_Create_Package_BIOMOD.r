@@ -47,7 +47,7 @@ runBiomod <- function(
                                      # For the difference between all the evaluation methods. See https://rdrr.io/cran/biomod2/man/BIOMOD_Modeling.html
                                      models.eval.meth = c('TSS'),
                                      rescal.all.models = FALSE,
-                                     do.full.models = FALSE,
+                                     do.full.models = TRUE,
                                      modeling.id = folder.name
                                      )
 

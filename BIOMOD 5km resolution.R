@@ -69,19 +69,6 @@ if(file.exists(datapath)){
 # Change colmun name of coordinates 
 names(climate.occ)[names(climate.occ) %in% c("x","y")] <- c("NZTMlon", "NZTMlat")
 
-
-# ### Add LGM climate to bioclim rasters
-# load("SAI_5km_current_4var.data")
-# load("Scores_Acaena_landcover5km.data")
-# 
-# source(".//functions//F02_create_raster_from_dataframe.R")
-# 
-# scores.sai <- cbind(scores, unlist(sai))
-# 
-# # Convert dataframe to raster
-# sai.raster <- convert_dataframe_to_raster(ref.raster, scores.sai, c("x","y"), "unlist(sai)")
-# names(sai.raster) <- "sai"
-
 # Create raster stack of bioclim and SAI rasters
 data.ras <- stack(bioNZ)
 
