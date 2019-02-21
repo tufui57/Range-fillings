@@ -22,5 +22,13 @@ LGM_NZTM <- lapply(LGMwgs_cropped, projectRaster, crs = proj4string(ref))
 
 names(LGM_NZTM) <- c("bioclim1", "bioclim6", "bioclim12", "bioclim15")
 
+### Resample LGM rasters
+# Prepare a raster which is resampled to
+ref_lgm.ext <- extend(ref,extent(LGM_NZTM[[1]]))
+
+LGM_NZTM2 <- lapply(LGM_NZTM, resample, ref_lgm.ext)
+
 # Environmental variables extracted from BIOCLIM and converted into NZTM.
-LGMdata <- stack(LGM_NZTM) %>% stack
+LGMdata <- stack(LGM_NZTM2) %>% stack
+
+
