@@ -11,4 +11,4 @@ climates <- as.data.frame(myExpl)
 
 
 # Calculate VIF
-vif(lm(sai_cinl ~ ., data = climates))
+vif(lm(sai_cc ~ ., data = climates))

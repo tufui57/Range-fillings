@@ -6,9 +6,12 @@ library(raster)
 library(ggplot2)
 library(gridExtra)
 library(grid)
+library(dplyr)
+
+source(".//functions//F_speciseNameCleaning_spnameFromPhylogenyTree.r")
 
 # Load SAIcc
-load("C:\\Users\\nomur\\Documents\\diff_SAIcc_cl_5km_wholeNZ.data")
+load("C:\\Users\\nomur\\Documents\\diff_SAI_5km_wholeNZ27Feb.data")
 
 genus_name="Chionochloa"
 
@@ -74,20 +77,6 @@ plot_SAI <- function(i, # species number
   
 }
 
-#################################################################################################################
-###   Plot difference of BIOMOD occurrence probability between LGM and current against SAIcc
-#################################################################################################################
-
-for(i in 1:length(cur)){
-  
-  try(plot_SAI(i, "SAIcc")
-      )
-
-}
-
-#################################################################################################################
-###   Plot difference of BIOMOD occurrence probability between LGM and current against difference of SAIcc-cl
-#################################################################################################################
 
 for(i in 1:length(cur)){
   
@@ -96,3 +85,69 @@ for(i in 1:length(cur)){
   
 }
 
+######################################################################################################################################################
+###   Averaged difference of BIOMOD occurrence probability between LGM and current against the difference between SAIcc-SAIcl
+######################################################################################################################################################
+
+extract_prob_diff <- function( i # species number
+                               ){
+  # Current occurrence probability
+  dat <- as.data.frame(cbind(coordinates(cur[[i]]), values(cur[[i]])))
+  colnames(dat)[3] <- "cur"
+  
+  # LGM occurrence probability
+  dat.lgm <- as.data.frame(cbind(coordinates(lgm[[i]]), values(lgm[[i]])))
+  colnames(dat.lgm)[3] <- "lgm"
+  
+  # Merge current and LGm data
+  dat2 <- merge(dat, dat.lgm, c("x","y"))
+  
+  # Merge occurrence probability data and SAI data
+  dat3 <- merge(dat2, sai.diff, c("x","y"))
+  dat3$prob.diff <- dat3$cur - dat3$lgm
+  
+  ### Points of occurrence records
+  spname <- spnames[i]
+  dat.sp <- merge(dat3, scores[scores[, spname] == 1, ], c("x","y"))
+  
+  return(dat.sp)
+  }
+  
+
+res <- list()
+
+for(i in 1:length(cur)){
+  
+  if(cur[i] != "NA"){
+      dat <- extract_prob_diff(i)
+      
+      ave.prob.diff <- dat$prob.diff %>% abs %>% mean
+      
+      ave.sai.diff <- dat$diff %>% abs %>% mean
+      
+      res[[i]] <- c(ave.prob.diff, ave.sai.diff)
+  }else{
+    res[[i]] <- "NA"
+  }
+
+}
+
+
+ave.diff <- do.call(cbind, res) %>% data.frame
+ave.diff2 <- t(ave.diff) %>% data.frame
+colnames(ave.diff2) <- c("prob.diff","sai.diff")
+ave.diff2$prob.diff <- ave.diff2$prob.diff %>% as.character %>% as.numeric
+ave.diff2$sai.diff <- ave.diff2$sai.diff %>% as.character %>% as.numeric
+
+ave.diff2$spname <- names(cur)[1:nrow(ave.diff2)]
+
+ave.diff2 <- cbind(ave.diff2, makeTag_separate(ave.diff2$spname, genus_name, separate = "\\.")[,2] %>% as.data.frame)
+
+png(paste(genus_name, "average_sai_diff_prob_diff.png",sep=""))
+
+plot(ave.diff2$prob.diff, ave.diff2$sai.diff, 
+     ylab="Difference of SAI", xlab="Difference of climate suitability"
+     )
+text(ave.diff2$sai.diff ~ ave.diff2$prob.diff, labels = ave.diff2$tag, cex= 1.5)
+
+dev.off()
