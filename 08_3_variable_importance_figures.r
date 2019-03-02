@@ -2,10 +2,10 @@
 ############################################################################################################
 ## Visualize varibale imporatance of SAI
 ############################################################################################################
-# 1km resolution, four bioclim
-folder.name = ""
+# 5km resolution, four bioclim
+#folder.name = "5km_15Jan19"
 # 5km resolution, four bioclim + SAIcc + SAIcl
-folder.name = "SAI_cinl8Feb19"
+folder.name = "SAI_28Feb19"
 
 ### Load variable importance
 
@@ -39,8 +39,8 @@ dev.off()
 ############################################################################################################
 
 ### Load range filling data
-aca.range <- read.csv("Y://rangefilling_AcaenaSAI_cinl8Feb19_ensamble.csv")
-chi.range <- read.csv("Y://rangefilling_ChionochloaSAI_cinl8Feb19_ensamble.csv")
+aca.range <- read.csv(paste("Y://rangefilling_Acaena", folder.name, ".csv", sep=""))
+chi.range <- read.csv(paste("Y://rangefilling_Chionochloa", folder.name,".csv", sep=""))
 
 # Merge the data
 aca.d <- merge(aca.range, aca, by.x = "spname", by.y = "X")
