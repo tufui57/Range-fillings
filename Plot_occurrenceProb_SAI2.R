@@ -105,45 +105,6 @@ extract_prob_diff <- function( i # species number
   }
   
 
-res <- list()
-
-for(i in 1:length(cur)){
-  
-  if(cur[i] != "NA"){
-      dat <- extract_prob_diff(i)
-      
-      ave.prob.diff <- dat$prob.diff %>% abs %>% mean
-      
-      ave.sai.diff <- dat$diff %>% abs %>% mean
-      
-      res[[i]] <- c(ave.prob.diff, ave.sai.diff)
-  }else{
-    res[[i]] <- "NA"
-  }
-
-}
-
-
-ave.diff <- do.call(cbind, res) %>% data.frame
-ave.diff2 <- t(ave.diff) %>% data.frame
-colnames(ave.diff2) <- c("prob.diff","sai.diff")
-ave.diff2$prob.diff <- ave.diff2$prob.diff %>% as.character %>% as.numeric
-ave.diff2$sai.diff <- ave.diff2$sai.diff %>% as.character %>% as.numeric
-
-ave.diff2$spname <- names(cur)[1:nrow(ave.diff2)]
-
-ave.diff2 <- cbind(ave.diff2, makeTag_separate(ave.diff2$spname, genus_name, separate = "\\.")[,2] %>% as.data.frame)
-
-png(paste(genus_name, "average_sai_diff_prob_diff.png",sep=""))
-
-plot(ave.diff2$prob.diff, ave.diff2$sai.diff, 
-     ylab="Difference of SAI", xlab="Difference of climate suitability"
-     )
-text(ave.diff2$sai.diff ~ ave.diff2$prob.diff, labels = ave.diff2$tag, cex= 1.5)
-
-dev.off()
-
-
 calculate_average_SAI <- function(genus_name){
   
   ### Load 5km presence/absence data
@@ -195,4 +156,20 @@ calculate_average_SAI <- function(genus_name){
 
 ave.chion <- calculate_average_SAI("Chionochloa")
 
-ave.aca <- calculate_average_SAI("Acaena")
+ave.aca <- try(calculate_average_SAI("Acaena"))
+
+ave.aca$genus <- "red"
+ave.chion$genus <- "blue"
+
+ave <- rbind(ave.aca, ave.chion)
+
+png("average_sai_diff_prob_diff.png")
+
+plot(ave$prob.diff, ave$sai.diff, 
+     ylab="Difference of SAI", xlab="Change of climate suitability",
+     col = ave$genus, pch=16
+)
+text(ave$sai.diff ~ ave$prob.diff, labels = ave$tag, cex= 1.5,
+     col = ave$genus)
+
+dev.off()

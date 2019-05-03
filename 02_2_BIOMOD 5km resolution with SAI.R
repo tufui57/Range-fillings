@@ -30,7 +30,7 @@ file.remove(tempFilePath)
 ########################        5km grid data import
 ##################################################################################################################
 # character string of target genus name
-genus_name <- "Chionochloa"
+genus_name <- "Acaena"
 
 ### Set arguments
 # data frame of occurrence data and climate data
@@ -95,21 +95,21 @@ names(sai.raster1500) <- "sai_cc"
 bio.ras <- stack(bioNZ)
 data.ras <- addLayer(bio.ras, c(sai.raster, sai.raster1500))
 
-# ##############################################################################
-# ### Add the difference between SAIcc - SAIcl to rasters
-# ##############################################################################
-# 
-# load("diff_SAI_5km_wholeNZ27Feb.data")
-# 
-# scores.sai.diff <- merge(scores.sai, sai.diff, by=c("x","y"))
-# 
-# # Convert dataframe to raster
-# sai.diff.ras <- convert_dataframe_to_raster(ref.raster, scores.sai1500, c("x","y"), "unlist(sai)")
-# names(sai.diff.ras) <- "sai_diff"
-# 
-# # Create raster stack of bioclim and SAI rasters
-# bio.ras <- stack(bioNZ)
-# data.ras <- addLayer(bio.ras, c(sai.raster, sai.raster1500, sai.diff.ras))
+##############################################################################
+### Add the difference between SAIcc - SAIcl to rasters
+##############################################################################
+
+load("diff_SAI_5km_wholeNZ27Feb.data")
+
+scores.sai.diff <- merge(scores.sai, sai.diff, by=c("x","y"))
+
+# Convert dataframe to raster
+sai.diff.ras <- convert_dataframe_to_raster(ref.raster, scores.sai.diff, c("x","y"), "diff")
+names(sai.diff.ras) <- "sai_diff"
+
+# Create raster stack of bioclim and SAI rasters
+bio.ras <- stack(bioNZ)
+data.ras <- addLayer(bio.ras, c(sai.raster, sai.raster1500, sai.diff.ras))
 
 ##############################################################################
 ### Collate data
@@ -133,7 +133,7 @@ if (genus_name == "Acaena"){
 for(i in spname){climate.occ3[is.na(climate.occ3[, i]), i] <- 0}
 
 # Environmental variables extracted from BIOCLIM and converted into NZTM.
-myExpl <- stack(data.ras[[c("bioclim1", "bioclim6", "bioclim12", "bioclim15", "sai_cl", "sai_cc" #, "sai_diff"
+myExpl <- stack(data.ras[[c("bioclim1", "bioclim6", "bioclim12", "bioclim15", "sai_cl", "sai_cc" , "sai_diff"
                             )]])
 
 ## Stay in a specific working directory, because all data needed for restoration is saved there.
@@ -152,7 +152,7 @@ setwd("Y://BIOMOD for Grid2")
 
 for(i in spname){
   tryCatch(
-    runBiomod(i, data = climate.occ3, myExpl = myExpl, folder.name = "SAI_28Feb19"),
+    runBiomod(i, data = climate.occ3, myExpl = myExpl, folder.name = "SAIdiff_4Mar19"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -173,8 +173,8 @@ folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus
 for(i in folders){
   tryCatch(
     biomodProjection_fromSavedBiomodModels(i,
-                                           modelname = "SAI_28Feb19",
-                                           proj.name = "SAI_28Feb19"),
+                                           modelname = "SAIdiff_4Mar19",
+                                           proj.name = "SAIdiff_4Mar19"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -208,7 +208,7 @@ projectionPlot <- function(spname, # species name
 
 for(i in folders){
   tryCatch(
-    projectionPlot(i, proj.name = "SAI_28Feb19"),
+    projectionPlot(i, proj.name = "SAIdiff_4Mar19"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -285,7 +285,7 @@ ensembleModelling_projection <- function(spname, # species name
 for(i in folders){
   tryCatch(
     ensembleModelling_projection(i, 
-                                 folder.name = "SAI_28Feb19", BIOMODproj.name = "SAI_28Feb19", ensambleProj.name = "SAI_28Feb19_ensamble"),
+                                 folder.name = "SAIdiff_4Mar19", BIOMODproj.name = "SAIdiff_4Mar19", ensambleProj.name = "SAI_28Feb19_ensamble"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
