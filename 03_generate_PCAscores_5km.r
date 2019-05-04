@@ -1,10 +1,6 @@
 
 # data frame of occurrence data and climate data
-if (genus_name == "Acaena"){
-  datapath <- "Y://1st chapter_Acaena project//Acaena manuscript//meta data//Acaena_bioclim_landcover_history_worldclim1_5km.csv"
-}else{
-  datapath <- "Y://Chionochloa_bioclim_landcover_history_worldclim1_5km.csv"
-}
+datapath <- paste("Y://5th chapter SAI chapter//raw data//", genus_name,"_bioclim_landcover_history_worldclim1_5km.csv", sep="")
 
 dat1 <- read.csv(datapath)
 d <- dat1[is.na(dat1$landCoverChange) == F, ]

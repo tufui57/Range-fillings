@@ -9,8 +9,8 @@ setwd("Y:\\BIOMOD for Grid2")
 folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus_name, .) %>% list.dirs(getwd(), full.names = FALSE, recursive = F)[.]
 
 # Names of BIOMOD models
-folder.name = "SAI_28Feb19"
-BIOMODproj.name = "SAI_28Feb19"
+folder.name = "SAIdiff_4Mar19"
+BIOMODproj.name = "SAIdiff_4Mar19"
 
 # Calculate rank
 ave.imp.rank <- list()

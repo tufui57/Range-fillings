@@ -15,10 +15,10 @@ folders <- (grepl(genus_name, folders) %>% folders[.])
 
 get_EMprojection <- function(spname, # species name
                              binary = TRUE, # FALSE; return probabiliry, TRUE; return binary prediction
-                             proj.name # file location of ensamble model projection.out
+                             ensambleProj.name # file location of ensamble model projection.out
 ) {
   
-  files <- list.files(paste(".//", spname, "//proj_", proj.name, sep = ""), full.names = T)
+  files <- list.files(paste(".//", spname, "//proj_", ensambleProj.name, sep = ""), full.names = T)
   
   if(length(files) == 0){
     print("No model built")
@@ -50,12 +50,20 @@ get_EMprojection <- function(spname, # species name
   return(proj)
 }
 
-# A. rorida has no model due to the small sample size
-pred <- lapply(folders, get_EMprojection, binary = FALSE, proj.name = "5kmLGM_15Jan19")
+# # A. rorida has no model due to the small sample size
+# pred <- lapply(folders, get_EMprojection, binary = FALSE, ensambleProj.name = "SAIdiff_4Mar19_ensamble")
+# names(pred) <- folders
+# ensambleProj.name = "SAIdiff_4Mar19_ensamble"
+# binary = "prob"
+# 
+# save(pred, file = paste("Y://ensemblePredictionBinary_", genus_name, ensambleProj.name, binary,".data", sep = ""))
+
+
+### Binary prediction needed for analyses
+pred <- lapply(folders, get_EMprojection, binary = TRUE, ensambleProj.name = "SAIdiff_4Mar19_ensamble")
 names(pred) <- folders
-proj.name = "5kmLGM_15Jan19"
-binary = "prob"
+ensambleProj.name = "SAIdiff_4Mar19_ensamble"
+binary = "binary"
 
-save(pred, file = paste("Y://ensemblePredictionBinary_", genus_name, proj.name, binary,".data", sep = ""))
-
+save(pred, file = paste("Y://ensemblePredictionBinary_", genus_name, ensambleProj.name, binary,".data", sep = ""))
 

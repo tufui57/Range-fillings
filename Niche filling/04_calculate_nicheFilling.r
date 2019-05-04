@@ -13,8 +13,6 @@ genus_name <- "Chionochloa"
 # source(".//functions//F02_clean_up_species_records18Sep.R")
 load(paste("Y://Scores_", genus_name,"_landcover.data", sep=""))
 
-# # Load ensamble projection data
-# load(paste("Y://ensemblePrediction_", genus_name, "12Dec.data", sep = ""))
 # Load ensamble projection data
 load(paste("Y://ensemblePredictionBinary_", genus_name, ".data", sep = ""))
 

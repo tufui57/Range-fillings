@@ -30,7 +30,7 @@ file.remove(tempFilePath)
 ########################        5km grid data import
 ##################################################################################################################
 # character string of target genus name
-genus_name <- "Acaena"
+genus_name <- "Chionochloa"
 
 ### Set arguments
 # data frame of occurrence data and climate data
@@ -66,9 +66,9 @@ names(climate.occ)[names(climate.occ) %in% c("x","y")] <- c("NZTMlon", "NZTMlat"
 ##############################################################################
 ### Add SAIcl to bioclim rasters
 ##############################################################################
-nam <- load("SAI_5km_currentInLGM_5000kmWindow_4var.data")
+nam <- load("Y:\\5th chapter SAI chapter\\meta data\\SAI_5km_currentInLGM_5000kmWindow_4var.data")
 sai <- get(nam)
-load("Scores_Acaena_landcover5km.data")
+load("Y:\\5th chapter SAI chapter\\raw data\\Scores_Acaena_landcover5km.data")
 
 source(".//functions//F02_create_raster_from_dataframe.R")
 
@@ -82,7 +82,7 @@ names(sai.raster) <- "sai_cl"
 ### Add SAIcc to bioclim rasters
 ##############################################################################
 
-nam <- load("SAI_5km_currentInCurrent_5000kmWindow_4var.data")
+nam <- load("Y:\\5th chapter SAI chapter\\meta data\\SAI_5km_currentInCurrent_5000kmWindow_4var.data")
 sai <- get(nam)
 
 scores.sai1500 <- cbind(scores, unlist(sai))
@@ -285,7 +285,9 @@ ensembleModelling_projection <- function(spname, # species name
 for(i in folders){
   tryCatch(
     ensembleModelling_projection(i, 
-                                 folder.name = "SAIdiff_4Mar19", BIOMODproj.name = "SAIdiff_4Mar19", ensambleProj.name = "SAI_28Feb19_ensamble"),
+                                 folder.name = "SAIdiff_4Mar19", 
+                                 BIOMODproj.name = "SAIdiff_4Mar19", 
+                                 ensambleProj.name = "SAIdiff_4Mar19_ensamble"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -319,7 +321,7 @@ EMprojectionPlot <- function(spname, # species name
 # If there are species whose BIOMOD failed and no grd file was generated, you don't get the plot.
 for(i in folders){
   tryCatch(
-    EMprojectionPlot(i, proj.name = "SAI_28Feb19_ensamble"),
+    EMprojectionPlot(i, proj.name = "SAIdiff_4Mar19"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )

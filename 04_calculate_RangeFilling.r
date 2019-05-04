@@ -6,25 +6,27 @@ genus_name <- "Acaena"  # "Chionochloa"
 
 library(dismo)
 library(dplyr)
-proj.name = "SAI_cinl8Feb19_ensamble"
+
+# Model names to extract predictions from
+ensambleProj.name = "SAIdiff_4Mar19_ensamble"
 resolution = 5
 
 # Load ensamble projection data
-scores.prob <- get(load(paste("Y://ensemblePredictionBinary_", genus_name, proj.name,".data", sep = "")))
+scores.prob <- get(load(paste("Y://ensemblePredictionBinary_", genus_name, ensambleProj.name, "binary.data", sep = "")))
 
 # Load PCA scores of occurrence data
 if(resolution == 1){
-  if(file.exists(paste(".\\Scores_", genus_name, "_landcover.data", sep = "")) == FALSE){
+  if(file.exists(paste("Y:\\5th chapter SAI chapter\\raw data\\Scores_", genus_name, "_landcover.data", sep = "")) == FALSE){
   source("C:\\Users\\nomur\\Documents\\Range fillings\\03_generate_PCAscores.r")
 }else{
-  load(paste(".\\Scores_", genus_name, "_landcover.data", sep = "")) 
+  load(paste("Y:\\5th chapter SAI chapter\\raw data\\Scores_", genus_name, "_landcover.data", sep = "")) 
 }
 
 }else{
-  if(file.exists(paste(".\\Scores_", genus_name, "_landcover5km.data", sep = "")) == FALSE){
+  if(file.exists(paste("Y:\\5th chapter SAI chapter\\raw data\\Scores_", genus_name, "_landcover5km.data", sep = "")) == FALSE){
     source("C:\\Users\\nomur\\Documents\\Range fillings\\03_generate_PCAscores_5km.r")
   }else{
-    load(paste(".\\Scores_", genus_name, "_landcover5km.data", sep = "")) 
+    load(paste("Y:\\5th chapter SAI chapter\\raw data\\Scores_", genus_name, "_landcover5km.data", sep = "")) 
   }
 }
 
@@ -55,7 +57,7 @@ rangefilling2 <- do.call(rbind, rangefilling)
 rangefilling3 <- data.frame(names(rangefilling), rangefilling2)
 colnames(rangefilling3) <- c("spname", "rangefilling", "occurrence", "predictedOccurrence")
 
-write.csv(rangefilling3, file = paste("Y://rangefilling_", genus_name, proj.name,".csv", sep=""))
+write.csv(rangefilling3, file = paste("Y://rangefilling_", resolution,"km", genus_name, ensambleProj.name,".csv", sep=""))
 
 ###################################################################################################
 ### Range filling as the overlap between observed and predicted occurrences by ecospat
