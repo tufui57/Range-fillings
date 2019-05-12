@@ -1,3 +1,17 @@
+#################################################################################
+### Plot map of LGM climate
+#################################################################################
+
+library(ggplot2)
+library(gridExtra)
+library(extrafont)
+library(grid)
+library(raster)
+library(rgdal)
+library(maptools)
+library(rgeos)
+library(dplyr)
+
 #########################################################
 ## Prepare LGM data in BIOMOD format
 #########################################################
