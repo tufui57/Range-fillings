@@ -2,15 +2,15 @@
 # Range filling analyses on 5km resolution
 ########################################################################################
 
-genus_name <-"Chionochloa" # "Acaena"
-genus_tag <- "chion" # "acaena"
+genus_name <- "Acaena" # "Chionochloa"
+genus_tag <- "acaena" # "chion"
 ensambleProj.name = "SAIdiff_4Mar19_ensamble"
 
 source(".//Chionochloa niche evolution//00_DataPreparation.R")
 
 # Load range filling
 rangefilling <- read.csv(
-  paste("Y://rangefilling_5km", genus_name, ensambleProj.name,".csv", sep="")
+  paste("Y://rangefilling_within_obs5km", genus_name, ensambleProj.name, ".csv", sep="")
   )
 
 # Load niche volume
@@ -24,8 +24,8 @@ dat <- merge(rangefilling, vols, by = "spname")
 # Compare range filling between Acaena and Chionochloa on 5km resolution
 ########################################################################################
 
-aca <- read.csv(paste("Y://rangefilling_5kmAcaena", ensambleProj.name,".csv", sep=""))
-chi <- read.csv(paste("Y://rangefilling_5kmChionochloa", ensambleProj.name,".csv", sep=""))
+aca <- read.csv(paste("Y://rangefilling_within_obs5kmAcaena", ensambleProj.name, ".csv", sep=""))
+chi <- read.csv(paste("Y://rangefilling_within_obs5kmChionochloa", ensambleProj.name, ".csv", sep=""))
 
 ### Compare range filling between genera
 var.test(aca$rangefilling, chi$rangefilling)

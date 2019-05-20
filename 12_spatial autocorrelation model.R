@@ -11,7 +11,9 @@ nblist <- nb2listw(test, style = "W", zero.policy = TRUE)
 print(nblist, zero.policy = TRUE)
 
 # Add SAI values
-load("SAI_5km_LGM_PC1_2.data")
+#load("Y://SAI_5km_currentInLGM_5000kmWindow_4var.data")
+load("Y://SAI_5km_currentInCurrent_5000kmWindow_4var.data")
+
 scores.sai <- cbind(scores, unlist(sai))
 colnames(scores.sai)[length(scores.sai)] <- "sai"
 
@@ -20,7 +22,7 @@ spname <- colnames(scores)[grep("^Acaena", colnames(scores))]
 sar <- list()
 for(i in spname){
   form <- formula(paste(i, "~ PC1 + PC2 + sai"))
-   sar[[i]] <- errorsarlm(form, data = scores.sai, nblist, , zero.policy=TRUE)
+   sar[[i]] <- errorsarlm(form, data = scores.sai, nblist, zero.policy=TRUE)
    summary(sar[i])
  }
 
@@ -35,8 +37,3 @@ lapply(sar, residuals.sarlm)
 lapply(sar, function(x){
   plot(predict.sarlm(x), residuals.sarlm(x))
   })
-
-### VIF
-library(car)
-vif(lm(scores.sai$sai ~ scores.sai$PC1 + scores.sai$PC2))
-summary((lm(scores.sai$sai ~ scores.sai$PC1 + scores.sai$PC2)))

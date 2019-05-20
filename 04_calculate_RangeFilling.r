@@ -65,3 +65,31 @@ write.csv(rangefilling3, file = paste("Y://rangefilling_", resolution,"km", genu
 
 # Go to ".//Rnage fillings//Ecospat_range_nicheOverlap_calculation.R"
 
+
+#########################################################################
+### Range filling as the ratio of true positive 
+#########################################################################
+
+rangefilling <- list()
+for(i in spname){
+  tryCatch(
+    {
+      predictedP <- values(scores.prob[[i]])
+      predictedP <- predictedP[!is.na(predictedP)]
+      
+      obs <- cbind(scores[,i], predictedP)
+      
+      # Range filling 
+      rangefilling[[i]] <- sum(ifelse(obs[,1]==1 & obs[,2]==1, 1, 0)) / sum(predictedP, na.rm = T)
+      rangefilling[[i]] <- c(sum(scores[,i] == 1), rangefilling[[i]][1])
+    },
+    error = function(e){cat("ERROR :",conditionMessage(e), "\n")}
+  )
+  
+}
+
+rangefilling2 <- do.call(rbind, rangefilling)
+rangefilling3 <- data.frame(cbind(rownames(rangefilling2), rangefilling2))
+colnames(rangefilling3) <- c("spname", "occurrence", "rangefilling")
+
+write.csv(rangefilling3, file = paste("Y://rangefilling_within_obs", resolution,"km", genus_name, ensambleProj.name,".csv", sep=""))
