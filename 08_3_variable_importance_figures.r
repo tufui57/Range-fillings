@@ -74,17 +74,16 @@ dev.off()
 ############################################################################################################
 
 ### Acaena
-
-trait <- read.csv("Y://Acaena_data_analyses18sep.csv")
-trait$X <- gsub("_", ".", trait$spname)
+genus_name = "Acaena"
+trait <- read.csv(paste("Y://rangefilling_within_obs5km", genus_name, folder.name,"_ensamble.csv", sep=""))
 
 dat <- merge(aca, trait, by = "X")
-dat$size <- ifelse(dat$total < 100, "Small",
-                   ifelse(dat$total > 100 & dat$total < 500, "Mid", "Large"
+dat$size <- ifelse(dat$occurrence < 100, "Small",
+                   ifelse(dat$occurrence > 100 & dat$occurrence < 500, "Mid", "Large"
                    )
 )
 
-write.csv(dat[, c("X","size", "total","AMT","MTC","AP","PS","SAIcc", "SAIcl", "SAIcc-SAIcl")], 
+write.csv(dat[, c("X","size", "occurrence","AMT","MTC","AP","PS","SAIcc", "SAIcl", "SAIcc-SAIcl")], 
           "Acaena_var_imp_size.csv")
 
 png("Y://Acaena_varImp_grouped_by_range.png",
@@ -107,18 +106,19 @@ for(i in c("Small","Mid","Large")){
         )
 }
 dev.off()
+rm(dat, dat2, trait)
 
 ### Chionochloa
-trait <- read.csv("Y://Analysis_chion.csv")
-trait$X <- gsub("_", ".", trait$spname)
+genus_name = "Chionochloa"
+trait <- read.csv(paste("Y://rangefilling_within_obs5km", genus_name, folder.name,"_ensamble.csv", sep=""))
 
 dat <- merge(chi, trait, by = "X")
-dat$size <- ifelse(dat$occ < 100, "Small",
-                   ifelse(dat$occ > 100 & dat$occ < 400, "Mid", "Large"
+dat$size <- ifelse(dat$occurrence < 100, "Small",
+                   ifelse(dat$occurrence > 100 & dat$occurrence < 250, "Mid", "Large"
                    )
 )
 
-write.csv(dat[, c("X","size", "occ","AMT","MTC","AP","PS","SAIcc", "SAIcl", "SAIcc-SAIcl")], 
+write.csv(dat[, c("X","size", "occurrence","AMT","MTC","AP","PS","SAIcc", "SAIcl", "SAIcc-SAIcl")], 
           "Chionochloa_var_imp_size.csv")
 
 png("Y://Chionochloa_varImp_grouped_by_range.png",
@@ -128,14 +128,14 @@ png("Y://Chionochloa_varImp_grouped_by_range.png",
 par(mfrow = c(1,3), cex=1)
 for(i in c("Small","Mid","Large")){
   dat2 <- dat[dat$size == i,]
-  meltaca <- melt(dat2[, c("AMT","MTC","AP","PS","SAIcc", "SAIcl", "SAIcc-SAIcl")])
+  meltchi <- melt(dat2[, c("AMT","MTC","AP","PS","SAIcc", "SAIcl", "SAIcc-SAIcl")])
   
   par(cex.lab=1.5, las=3)
-  boxplot(meltaca$value ~ meltaca$variable,
-          ylim = rev(range(meltaca$value)),
+  boxplot(meltchi$value ~ meltchi$variable,
+          ylim = rev(range(meltchi$value)),
           main = paste(i, "ranged Chionochloa species\n", 
                        ifelse(i=="Small", "n < 100",
-                              ifelse(i=="Mid", "100 < n < 400", "n > 400")
+                              ifelse(i=="Mid", "100 < n < 250", "n > 250")
                        )),
           ylab = "Variable Importance"
   )
