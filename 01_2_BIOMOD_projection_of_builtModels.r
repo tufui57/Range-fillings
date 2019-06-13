@@ -65,6 +65,8 @@ folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus
 ## Takes a while to run... slow but wait!
 #########################################################
 
+## Prediction for LGM climate-only
+
 for(i in folders){
   tryCatch(
     biomodProjection_forNewData(i, LGMdata,
@@ -75,4 +77,7 @@ for(i in folders){
   )
 }
 
-
+##################################################################################################################
+## Prediction for LGM climate with SAI values is not possible,
+## because SAIcl and the difference between SAIcc-SAIcl values have no data for the NZ land areas of the LGM
+##################################################################################################################

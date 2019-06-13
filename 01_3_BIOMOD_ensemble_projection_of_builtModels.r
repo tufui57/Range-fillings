@@ -79,8 +79,9 @@ EMprojectionPlot <- function(spname, # species name
 for(i in folders){
   tryCatch(
     {ensembleProjection(i,
-                       BIOMODproj.name = "5kmLGM_15Jan19",
-                       ensambleModel.name="5km_15Jan19")
+                       BIOMODproj.name = "5kmLGM_15Jan19", # "SAIdiff_4Mar19"
+                       ensambleModel.name="5km_15Jan19" #  "SAIdiff_4Mar19_ensamble"
+                       )
     
     # If there are species whose BIOMOD failed and no grd file was generated, you don't get the plot.
     EMprojectionPlot(i, BIOMODproj.name = "5kmLGM_15Jan19", binary = FALSE)
