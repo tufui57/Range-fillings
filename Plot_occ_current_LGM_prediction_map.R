@@ -7,7 +7,9 @@ library(raster)
 library(rgdal)
 
 # character string of target genus name
-genus_name <- "Acaena"
+genus_name <- "Chionochloa"
+
+source(".//functions//F_speciseNameCleaning_spnameFromPhylogenyTree.r")
 
 ############################################################################################################
 ### Occurrence record maps 
@@ -60,11 +62,14 @@ map_plot <- function(species, # character string of species name
   proj4pts <- proj4string(ref.raster)
   proj4string(pts) <- CRS(proj4pts)
   
+  # Get species name tag 
+  tag <- sptag2[which(spname == species)]
+  
   # Plot map
   pMap <- ggplot() +
     geom_polygon(data = nzland, aes(x = long, y = lat, group = group), colour = "gray50", fill = 'gray90') +
     geom_point(data = d.s, aes(x = x, y = y), color = "blue", alpha = 0.1) +
-    ggtitle(species) +
+    ggtitle(tag) +
     guides(colour = guide_legend(override.aes = list(size = 5, shape = 16, alpha = 0.7))) +
     labs(x = "", y = "") +
     # legend position inside plot at topleft
@@ -93,6 +98,9 @@ load(paste("Y://ensemblePredictionBinary_", genus_name, "5kmLGM_15Jan19prob.data
 
 # Get species name
 spname <- colnames(climate.occ)[grepl(genus_name, colnames(climate.occ))] %>% gsub("_",".",.)
+### Name tag
+sptag <- makeTag_separate(spname, genus_name, ".")
+sptag2 <- sptag$tag %>% as.character
 
 pred2 <- pred[names(pred) %in% spname]
 spname2 <- spname[spname %in% names(pred2)]
