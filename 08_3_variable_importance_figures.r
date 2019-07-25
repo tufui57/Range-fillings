@@ -22,25 +22,22 @@ library(reshape)
 meltaca <- melt(aca[,-1])
 meltchi <- melt(chi[,-1])
 
-png(paste("Acaena_varibale_importance", folder.name,".png", sep=""))
+png(paste("varibale_importance", folder.name,".png", sep=""),
+    width = 480, height = 350)
 
-par(cex.lab=1.5, las=3)
+par(mfrow = c(1,2), cex.lab=1.5, las=3, mar = c(6.1,4.1,4.1,2.1))
 boxplot(meltaca$value ~ meltaca$variable,
         ylim = rev(range(meltaca$value)),
-        main = "Acaena",
+        #main = "Acaena",
+        xlab = "",
         ylab = "Variable Importance")
-
-dev.off()
-
-png(paste("Chionochloa_varibale_importance", folder.name,".png", sep=""))
-
-par(cex.lab=1.5, las=3)
 boxplot(meltchi$value ~ meltchi$variable,
         ylim = rev(range(meltchi$value)),
-        main = "Chionochloa",
+        #main = "Chionochloa",
+        xlab = "",
         ylab = "Variable Importance")
-
 dev.off()
+
 
 ## Flipped boxplots
 
@@ -87,10 +84,10 @@ write.csv(dat[, c("X","size", "occurrence","AMT","MTC","AP","PS","SAIcc", "SAIcl
           "Acaena_var_imp_size.csv")
 
 png("Y://Acaena_varImp_grouped_by_range.png",
-    width = 800, height = 550
+    width = 800, height = 350
 )
 
-par(mfrow = c(1,3), cex=1)
+par(mfrow = c(1,3), cex=1, las=3, mar = c(6.1,4.1,4.1,2.1))
 for(i in c("Small","Mid","Large")){
   dat2 <- dat[dat$size == i,]
   meltaca <- melt(dat2[, c("AMT","MTC","AP","PS","SAIcc", "SAIcl", "SAIcc-SAIcl")])
@@ -102,6 +99,7 @@ for(i in c("Small","Mid","Large")){
                      ifelse(i=="Small", "n < 50",
                             ifelse(i=="Mid", "50 < n < 100", "n > 100")
                                                         )),
+        xlab = "",
         ylab = "Variable Importance"
         )
 }
@@ -122,10 +120,10 @@ write.csv(dat[, c("X","size", "occurrence","AMT","MTC","AP","PS","SAIcc", "SAIcl
           "Chionochloa_var_imp_size.csv")
 
 png("Y://Chionochloa_varImp_grouped_by_range.png",
-    width = 800, height = 550
-    )
+    width = 800, height = 350
+)
 
-par(mfrow = c(1,3), cex=1)
+par(mfrow = c(1,3), cex=1, las=3, mar = c(6.1,4.1,4.1,2.1))
 for(i in c("Small","Mid","Large")){
   dat2 <- dat[dat$size == i,]
   meltchi <- melt(dat2[, c("AMT","MTC","AP","PS","SAIcc", "SAIcl", "SAIcc-SAIcl")])
@@ -137,6 +135,7 @@ for(i in c("Small","Mid","Large")){
                        ifelse(i=="Small", "n < 100",
                               ifelse(i=="Mid", "100 < n < 250", "n > 250")
                        )),
+          xlab = "",
           ylab = "Variable Importance"
   )
 }
