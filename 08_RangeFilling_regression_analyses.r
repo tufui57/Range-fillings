@@ -90,10 +90,10 @@ rm(myplot)
 ############################################################################################################
 
 myplot <- plotAnalysis(data = dat2,
-                       yv = "SAIcc", xv = "rangefilling", 
+                       xv = "SAIcc", yv = "rangefilling", 
                        nodeNumbercol = "tag", showStats = F,
-                       genus_name = genus_name, label.point = T,
-                       ylabname = "Averaged spatial availability\nover species habitat", xlabname = "Range filling"
+                       genus_name = genus_name, label.point = F,
+                       xlabname = "Availability of climate\noccupied by species", ylabname = "Range filling"
 )+
   theme(text = element_text(size=10),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
