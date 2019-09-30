@@ -2,8 +2,8 @@
 # Range filling analyses on 5km resolution
 ########################################################################################
 
-genus_name <- "Acaena" # "Chionochloa"
-genus_tag <- "acaena" # "chion"
+genus_name <- "Acaena"
+genus_tag <- "chion"
 ensambleProj.name = "SAIdiff_4Mar19_ensamble"
 
 source(".//Chionochloa niche evolution//scripts//00_DataPreparation.R")
@@ -89,12 +89,15 @@ rm(myplot)
 ##### Range filling ~ Averaged SAI over species habitat
 ############################################################################################################
 
+# "ShowStats" has bug!!!
+
 myplot <- plotAnalysis(data = dat2,
                        xv = "SAIcc", yv = "rangefilling", 
                        nodeNumbercol = "tag", showStats = F,
                        genus_name = genus_name, label.point = F,
                        xlabname = "Availability of climate\noccupied by species", ylabname = "Range filling"
 )+
+  xlim(0.55, 0.75) +
   theme(text = element_text(size=10),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))
