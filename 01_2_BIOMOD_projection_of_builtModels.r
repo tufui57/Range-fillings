@@ -8,9 +8,9 @@ library(dplyr)
 library(raster)
 library(biomod2)
 # Load functions to develop BIOMOD
-source(".\\Range fillings\\F_Create_Package_BIOMOD.r")
+source("C:\\Users\\nomur\\Documents\\GitHub\\Range-fillings\\F_Create_Package_BIOMOD.r")
 # Create LGM raster stuck
-source(".\\Range fillings\\01_4_create_LGMclimate_raster.r")
+source("C:\\Users\\nomur\\Documents\\GitHub\\Range-fillings\\01_4_create_LGMclimate_raster.r")
 
 biomodProjection_forNewData <- function(foldername, # Folder names containing BIOMOD models
                                         newData, # input environmental data for projection
