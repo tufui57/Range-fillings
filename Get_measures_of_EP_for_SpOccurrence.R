@@ -44,30 +44,34 @@ par(mfrow = c(4,4))
 lapply(spname, function(x){hist(ep.sp[[x]], main = x)})
 
 ## EPcc range over species occurrence records
-lapply(spname, function(x){range(ep.sp[[x]])})
-lapply(spname, function(x){width(ep.sp[[x]])})
+ep.range <- lapply(spname, function(x){
+  max(ep.sp[[x]]) - min(ep.sp[[x]])
+  })
 
-#############################################################################################################
-### Barplot the number of species occurrence grid cells grouped by the values of EPcl
-#############################################################################################################
 
-res <- list()
-for(i in seq(0,1,0.1)[-11]){
-  sai.dat2 <- sai.dat[sai.dat$SAIcl >= i & sai.dat$SAIcl <= i + 0.1, ]
-  res[as.character(i)] <- sum(sai.dat2$sumsp)
+sp.occ <- list()
+for(i in spname){
+  sp.occ[[i]] <- sum(scores[, i] == 1)
 }
+names(ep.sp)<- spname
 
-res.occ <- list()
-for(i in seq(0,1,0.1)[-11]){
-  sai.dat2 <- sai.dat[sai.dat$SAIcl >= i & sai.dat$SAIcl <= i + 0.1, ]
-  res.occ[as.character(i)] <- sum(sai.dat2$spocc)
-}
+### The followings must be tested by spatial autocorrelation model!
+#################################################################################################################
+### Do species occurring in areas with wider range of EP have larger range?
+plot(unlist(ep.range), unlist(sp.occ))
 
-res.sai<-list()
-for(i in seq(0,1,0.1)[-11]){
-  sai.dat2 <- sai.dat[sai.dat$SAIcl >= i & sai.dat$SAIcl <= i + 0.1, ]
-  res.sai[as.character(i)] <- nrow(sai.dat2)
-}
+## EPcc average over species occurrence records
+plot(sapply(ep.sp, mean), unlist(sp.occ))
+## EPcc median over species occurrence records
+plot(sapply(ep.sp, median), unlist(sp.occ))
 
-barplot(unlist(res.sai))
-barplot(unlist(res.occ), col = "red", add = T)
+
+#################################################################################################################
+### Do areas with higher EP have more species?
+plot(scores.ep$EPcc, sai.dat$sumsp)
+
+#################################################################################################################
+### Do species with smaller niche volume occur in rare climate areas? 
+sp <- read.csv("Y:\\1st chapter_Acaena project\\Acaena manuscript\\meta data\\Acaena_data_analyses18sep.csv")
+plot(unlist(ep.range), sp$niche_volume)
+
