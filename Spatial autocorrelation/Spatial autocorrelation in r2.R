@@ -7,6 +7,7 @@
 ### Simultenious autoregressive model
 ########################################
 
+library(spdep)
 library(spatialreg)
 library(dplyr)
 library(raster)
@@ -33,37 +34,62 @@ ensambleProj.name = "SAIdiff_4Mar19_ensamble"
 binary = "prob"
 load(paste("Y://ensemblePredictionBinary_", genus_name, "SAIdiff_4Mar19_ensambleprob.data", sep = ""))
 
-test <- data.frame(coordinates(pred[[1]]),values(pred[[1]]))
-test2 <- test[!is.na(test$values.pred..1...), ]
+spname <- colnames(scores)[grepl(paste("^", genus_name, sep = ""), colnames(scores))]
+
+names(pred) == spname
+
+### Convert raster of probability to dataframe
+probability <- list()
+
+for(i in 1:length(spname)){
+
+  tryCatch(
+    {
+      d1 <- data.frame(coordinates(pred[[i]]),values(pred[[i]]))
+      colnames(d1)[3] <- "pred"
+      probability[[i]] <- d1[!is.na(d1[, "pred"]), ]
+    }, error=function(e){}
+  )
+  
+}
+
+# test
+i = 1
 
 scores.ep <- merge(scores, epcc[,c("x","y","EPcc")], by=c("x","y")) %>% 
   merge(., epcl[,c("x","y","EPcl")], by=c("x","y")) %>% 
-  merge(., test2,  by=c("x","y"))
+  merge(., probability[[i]],  by=c("x","y"))
 
-spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
 
 ### Neighbourhood structure
 
 ### Vector of lists of nearest neighbour grid cells
 # Neighbourhood defined by distance
 neighs <- dnearneigh(as.matrix(scores.ep[,c("x","y")]), 
-                     d1 = 4900, d2 = 5200) # this generates empty neighbours for some grid cells
+                     d1 = 4900, d2 = 20100) 
+# d2 = 5100 means 5km and it generates empty neighbours for some grid cells and link for each cell is just 1.
 
 ### Spatial autocorrelation index (Moran's I) of EPcc along distance
 sp.correlogram(neighs, test$EPcc, order = 6, method = "I", zero.policy = TRUE)
 
 
 ### LM
-m1 <- lm(values.pred..1... ~ EPcc, data=scores.ep)
+m1 <- lm(pred ~ EPcc, data = scores.ep)
 # LM residuals
 scores.ep$residuals <- residuals(m1)
 # Moran's I by MC
-moran.res <- moran.mc(scores.ep$residuals, neighs, 999)
+moran.res <- moran.mc(scores.ep$residuals, nb2listw(neighs, zero.policy=TRUE), 
+                      nsim = 99, # iteration only 99 times
+                      zero.policy = T)
 moran.res$p.value
 
 ### Simultaneous autoregressive model
 
-sac.model <- sacsarlm(values.pred..1... ~ EPcc, data=scores.ep, neighs)
+system.time(
+  sac.model <- spatialreg::sacsarlm(pred ~ EPcc, data = scores.ep, 
+                                    nb2listw(neighs, zero.policy = T),
+                                    zero.policy = T)
+)
 
 summary(sac.model, correlation = TRUE)
 
@@ -107,11 +133,4 @@ sp.correlogram(neighs, test$residuals.sac, order = 6, method = "I", zero.policy 
 
 moran.test(test$residuals.sac, nb2listw(neighs))
 
-################################################################################
-### Generate virtual species distribution
-################################################################################
 
-library(virtualspecies)
-# Referenc of this package; https://onlinelibrary.wiley.com/doi/10.1111/ecog.01388
-
-generateRandomSp()
