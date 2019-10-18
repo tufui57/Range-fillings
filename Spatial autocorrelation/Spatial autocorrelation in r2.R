@@ -90,15 +90,23 @@ system.time(
                                     nb2listw(neighs, zero.policy = T),
                                     zero.policy = T)
 )
+# user   system  elapsed 
+# 13077.63     8.02 13086.77 
 
 summary(sac.model, correlation = TRUE)
 
 scores.ep$residuals.sac <- residuals(sac.model)
 
 ### Draw correlograms for ordinary least swuares and simultaneous autoregressive models
-sp.correlogram(neighs, scores.ep$residuals, order = 10, method = "I", zero.policy = TRUE) 
-sp.correlogram(neighs, scores.ep$residuals.sac, order = 10, method = "I", zero.policy = TRUE)
+system.time(
+  sp.correlogram(neighs, scores.ep$residuals, order = 10, method = "I", zero.policy = TRUE) 
+)
+#    user  system elapsed 
+# 3712.04    2.96 3720.02 
 
+system.time(
+  res <- sp.correlogram(neighs, scores.ep$residuals.sac, order = 10, method = "I", zero.policy = TRUE) 
+)
 
 
 
