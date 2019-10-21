@@ -4,7 +4,7 @@
 
 library(dplyr)
 
-genus_name <- "Chionochloa" # "Acaena"
+genus_name <- "Acaena"
 # Import species occurrence data
 load(paste(".//Scores_", genus_name, "_landcover_worldclim1_5km.data", sep = ""))
 
@@ -100,17 +100,37 @@ dev.off()
 #################################################################################################################
 if(genus_name=="Acaena"){
   sp <-   read.csv("Y:\\1st chapter_Acaena project\\Acaena manuscript\\meta data\\Acaena_data_analyses18sep.csv")
+  colnames(sp)
 
 }else{
   sp <- read.csv("Y://NicheVolume_age_chion.csv")
 }
 
 names(ep.range) <- spname
-ep.range <- unlist(ep.range) %>% as.data.frame
-colnames(ep.range) <- "ep.range"
+
+ep.range <- cbind(unlist(ep.range), sapply(ep.sp, median), sapply(ep.sp, mean)) %>% as.data.frame
+colnames(ep.range) <- c("ep.range", "ep.median","ep.mean")
 ep.range$spname <- rownames(ep.range)
 dat <- merge(ep.range, sp, by = "spname")
+dat2 <- data.frame(c(unlist(sp.occ)), names(sp.occ))
+dat <- merge(dat, dat2, by.x = "spname", by.y = "names.sp.occ.")
 
 png(paste("Y://", genus_name, "EPrange_speciesNicheVolume.png", sep=""))
 plot(dat$ep.range, dat$niche_volume, main = genus_name, xlab = "EP range", ylab = "Climatic niche volume")
+dev.off()
+
+png(paste("Y://", genus_name, "EPmean_speciesNicheVolume.png", sep=""))
+plot(dat$ep.mean, dat$niche_volume, main = genus_name, xlab = "EP mean", ylab = "Climatic niche volume")
+dev.off()
+
+png(paste("Y://", genus_name, "EPmedian_speciesNicheVolume.png", sep=""))
+plot(dat$ep.median, dat$niche_volume, main = genus_name, xlab = "EP median", ylab = "Climatic niche volume")
+dev.off()
+
+#################################################################################################################
+### Climatic niche volume vs. range size
+#################################################################################################################
+
+png(paste("Y://", genus_name, "speciesRange_speciesNicheVolume.png", sep=""))
+plot(dat$c.unlist.sp.occ.., dat$niche_volume, main = genus_name, xlab = "Speices range", ylab = "Climatic niche volume")
 dev.off()
