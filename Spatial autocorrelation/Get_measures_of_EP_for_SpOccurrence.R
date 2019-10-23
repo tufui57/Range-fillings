@@ -4,7 +4,7 @@
 
 library(dplyr)
 
-genus_name <- "Acaena"
+genus_name <- "Chionochloa"
 # Import species occurrence data
 load(paste(".//Scores_", genus_name, "_landcover_worldclim1_5km.data", sep = ""))
 
@@ -133,4 +133,40 @@ dev.off()
 
 png(paste("Y://", genus_name, "speciesRange_speciesNicheVolume.png", sep=""))
 plot(dat$c.unlist.sp.occ.., dat$niche_volume, main = genus_name, xlab = "Speices range", ylab = "Climatic niche volume")
+dev.off()
+
+
+#################################################################################################################
+### Epcc-cl vs. species occurrences
+#################################################################################################################
+
+epcccl.sp <- list()
+
+for(i in spname){
+  epcccl.sp[[i]] <- scores.ep[scores.ep[, i] == 1, c("EPcc", "EPcl")]
+}
+names(epcccl.sp)<- spname
+
+# Draw EPcc-cl histgrams over areas with species occurrence records
+for(i in 1:length(epcccl.sp)){
+  hist(epcccl.sp[[i]][, "EPcc"] - epcccl.sp[[i]][, "EPcl"], 
+       main = names(epcccl.sp)[i], xlab = "EPcc-cl",
+       xlim = c(-0.15, 0.15)
+       )
+}
+
+# Proportions of areas with species occurrence records and positive EPcc-cl 
+epcccl.prop <- list()
+for(i in 1:length(epcccl.sp)){
+  res <- epcccl.sp[[i]][, "EPcc"] - epcccl.sp[[i]][, "EPcl"]
+  epcccl.prop[[i]] <- sum(res > 0) / nrow(epcccl.sp[[i]])
+  
+}
+
+dat3 <- merge(dat, data.frame(spname, unlist(epcccl.prop)), by = "spname")
+
+png(paste("Y://", genus_name, "speciesRange_Prop_potiveEPcc_cl.png", sep=""))
+plot(dat3$c.unlist.sp.occ.., dat3$unlist.epcccl.prop.,
+     main=genus_name, 
+     xlab = "Species range", ylab = "Proportion of positive EPcc-cl over species range size")
 dev.off()

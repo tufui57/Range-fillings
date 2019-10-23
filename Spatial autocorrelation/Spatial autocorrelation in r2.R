@@ -12,7 +12,7 @@ library(spatialreg)
 library(dplyr)
 library(raster)
 
-genus_name <- "Chionochloa"
+genus_name <- "Acaena"
 
 # Import species occurrence data
 load(paste(".//Scores_", genus_name, "_landcover_worldclim1_5km.data", sep = ""))
@@ -78,22 +78,22 @@ m1 <- lm(pred ~ EPcc, data = scores.ep)
 # LM residuals
 scores.ep$residuals <- residuals(m1)
 # Moran's I by MC
-moran.res <- moran.mc(scores.ep$residuals, nb2listw(neighs, zero.policy=TRUE), 
+moran.res20 <- moran.mc(scores.ep$residuals, nb2listw(neighs, zero.policy=TRUE), 
                       nsim = 99, # iteration only 99 times
                       zero.policy = T)
-moran.res$p.value
+moran.res20$p.value
 
 ### Simultaneous autoregressive model
 
 system.time(
-  sac.model <- spatialreg::sacsarlm(pred ~ EPcc, data = scores.ep, 
+  sac.model20 <- spatialreg::sacsarlm(pred ~ EPcc, data = scores.ep, 
                                     nb2listw(neighs, zero.policy = T),
                                     zero.policy = T)
 )
 # user   system  elapsed 
 # 13077.63     8.02 13086.77 
 
-summary(sac.model, correlation = TRUE)
+summary(sac.model20, correlation = TRUE)
 
 scores.ep$residuals.sac <- residuals(sac.model)
 
@@ -111,27 +111,22 @@ system.time(
 
 
 
-### Neighbourhood structure
-test <- scores.ep[1:8000,]
+
+
 ### Vector of lists of nearest neighbour grid cells
 # Neighbourhood defined by distance
-neighs <- dnearneigh(as.matrix(test[, c("x","y")]), 
-                     d1 = 4900, d2 = 40800) # this generates empty neighbours for some grid cells
-### LM
-m1 <- lm(values.pred..1... ~ EPcc, data = test)
-# LM residuals
-test$residuals <- residuals(m1)
-# Moran's I test by MC
-moran.res <- moran.mc(test$residuals, nb2listw(neighs, zero.policy=TRUE), 999)
-moran.res$p.value
+neighs100 <- dnearneigh(as.matrix(scores.ep[,c("x","y")]), 
+                     d1 = 4900, d2 = 100100)  # this generates empty neighbours for some grid cells
 
 ### Simultaneous autoregressive model
 
-sac.model <- sacsarlm(values.pred..1... ~ EPcc, data = test, nb2listw(neighs))
+system.time(
+  sac.model100 <- spatialreg::sacsarlm(pred ~ EPcc, data = scores.ep, 
+                                      nb2listw(neighs100, zero.policy = T),
+                                      zero.policy = T)
+)
+summary(sac.model100, correlation = TRUE)
 
-summary(sac.model, correlation = TRUE)
-
-test$residuals.sac <- residuals(sac.model)
 
 ### Draw correlograms for ordinary least swuares and simultaneous autoregressive models
 sp.correlogram(neighs, test$residuals, order = 6, method = "I", 

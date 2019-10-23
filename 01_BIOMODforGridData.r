@@ -27,7 +27,7 @@ library(dplyr)
 library(biomod2)
 
 # Load functions to develop BIOMOD
-source(".\\Range fillings\\F_Create_Package_BIOMOD.r")
+source(".\\GitHub\\Range fillings\\F_Create_Package_BIOMOD.r")
 
 ############ NOTE ########################################################################
 # BIOMOD_Projection() & BIOMOD_Modeling() write raster files in tempdir()
@@ -62,7 +62,7 @@ ref.raster <- raster(
 proj4stringNZTM <- proj4string(ref.raster)
 # Worldclim ver.1.4
 path <-"Y:\\GIS map and Climate data\\worldclim\\bio_411"
-source(".\\functions\\F01_project_resample_WORLDCLIM.R")
+source(".\\GitHub\\functions\\F01_project_resample_WORLDCLIM.R")
 
 
 # Import data frame of bioclim and occurrence records
