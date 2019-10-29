@@ -6,6 +6,10 @@ library(dplyr)
 library(ggplot2)
 source(".\\GitHub\\Range-fillings\\Spatial autocorrelation\\F_randomSampling_EP_from_climatically_suitable_areas.R")
 
+############################################################
+# Import predicted presence
+############################################################
+
 genus_name <- "Acaena"
 load(paste("Y://ensemblePredictionBinary_", genus_name, "5km_15Jan19_ensamblebinary.data", sep = ""))
 
@@ -137,7 +141,7 @@ dat$spname <- gsub("_", ".", dat$spname)
 dat2 <- merge(dat, errors2, by = "spname")
 
 #################################################################################################################
-### Draw plots
+### Draw plots; EP vs. species range
 #################################################################################################################
 # Default line plot
 p <- ggplot(dat2, aes(x = c.unlist.sp.occ.., y = ep.range)) + 
@@ -179,33 +183,59 @@ p + labs(title = genus_name, y = "EP median", x = "Species range") +
   theme_classic()
 dev.off()
 
+################################################################################
+### Climatic niche volume vs. EP
+################################################################################
+
+#### Add error bars on line plots
+
+# Default line plot
+p <- ggplot(dat2, aes_string(x = "niche_volume", y = "ep.range")) + 
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = error.min.range, ymax = error.max.range), col = "red")
+
+png(paste("Y://", genus_name, "_eprange.png", sep=""))
+# Finished line plot
+p + labs(title = genus_name, y = "EP range", x = "Species niche volume") +
+  theme_classic()
+dev.off()
+
+
+# Default line plot
+p <- ggplot(dat2, aes(x = niche_volume, y = ep.mean)) + 
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = error.min.mean, ymax = error.max.mean), col = "red")
+
+png(paste("Y://", genus_name, "_epmean.png", sep=""))
+# Finished line plot
+p + labs(title = genus_name, y = "EP mean", x = "Species niche volume") +
+  theme_classic()
+dev.off()
+
+
+# Default line plot
+p <- ggplot(dat2, aes(x = niche_volume, y = ep.median)) + 
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = error.min.median, ymax = error.max.median), col = "red",
+                position = position_dodge(0.05))
+
+png(paste("Y://", genus_name, "_epmedian.png", sep=""))
+# Finished line plot
+p + labs(title = genus_name, y = "EP median", x = "Species niche volume") +
+  theme_classic()
+dev.off()
+
+
+
 #################################################################################################################
-### Get Epcc-cl of species occurrence records
-#################################################################################################################
-
-epcccl.sp <- list()
-
-for(i in spname){
-  epcccl.sp[[i]] <- scores.ep[scores.ep[, i] == 1, c("EPcc", "EPcl")]
-}
-names(epcccl.sp) <- spname
-
-# Proportions of areas with species occurrence records and positive EPcc-cl 
-epcccl.prop <- list()
-for(i in 1:length(epcccl.sp)){
-  res <- epcccl.sp[[i]][, "EPcc"] - epcccl.sp[[i]][, "EPcl"]
-  epcccl.prop[[i]] <- sum(res > 0) / nrow(epcccl.sp[[i]])
-  
-}
-
-dat3 <- merge(dat2, data.frame(spname, unlist(epcccl.prop)), by = "spname")
-
-#################################################################################################################
-### Draw plots
+### Draw plots; proportion of positive EPcc-cl vs. species range or niche volume
 #################################################################################################################
 
 # Default line plot
-p <- ggplot(dat3, aes(x = c.unlist.sp.occ.., y = unlist.epcccl.prop.)) + 
+p <- ggplot(dat2, aes(x = c.unlist.sp.occ.., y = epcccl.prop)) + 
   geom_line() +
   geom_point() +
   geom_errorbar(aes(ymin = error.min.prop, ymax = error.max.prop), col = "red")
@@ -218,7 +248,7 @@ dev.off()
 
 
 # Default line plot
-p <- ggplot(dat3, aes(x = niche_volume, y = unlist.epcccl.prop.)) + 
+p <- ggplot(dat2, aes(x = niche_volume, y = epcccl.prop)) + 
   geom_line() +
   geom_point() +
   geom_errorbar(aes(ymin = error.min.prop, ymax = error.max.prop), col = "red")

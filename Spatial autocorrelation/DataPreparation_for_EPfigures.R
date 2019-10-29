@@ -1,14 +1,13 @@
 #############################################################################################################
 ### Prepare EP
 #############################################################################################################
-library(raster)
+
 library(dplyr)
-library(ggplot2)
 
 ##############################################################################
 ### Data preparation
 ##############################################################################
-genus_name <- "Acaena"
+genus_name <- "Chionochloa"
 # Import species occurrence data
 load(paste(".//Scores_", genus_name, "_landcover_worldclim1_5km.data", sep = ""))
 
@@ -28,9 +27,6 @@ scores.ep <- merge(scores, epcc[, c("x", "y", "EPcc")], by = c("x","y")) %>%
   merge(., epcl[, c("x","y","EPcl")], by = c("x","y"))
 
 spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
-
-sai.dat <- mutate(scores.ep, sumsp = rowSums(scores.ep[,spname]))
-sai.dat <- mutate(sai.dat, spocc = ifelse(sai.dat$sumsp > 0, 1, 0))
 
 #############################################################################################################
 ### Range of EPcc for species habitats
@@ -69,8 +65,29 @@ if(genus_name=="Acaena"){
 
 names(ep.range) <- spname
 
-ep.range <- cbind(unlist(ep.range), sapply(ep.sp, median), sapply(ep.sp, mean)) %>% as.data.frame
-colnames(ep.range) <- c("ep.range", "ep.median","ep.mean")
+#################################################################################################################
+### Get Epcc-cl of species occurrence records
+#################################################################################################################
+
+epcccl.sp <- list()
+
+for(i in spname){
+  epcccl.sp[[i]] <- scores.ep[scores.ep[, i] == 1, c("EPcc", "EPcl")]
+}
+names(epcccl.sp) <- spname
+
+# Proportions of areas with species occurrence records and positive EPcc-cl 
+epcccl.prop <- list()
+for(i in 1:length(epcccl.sp)){
+  res <- epcccl.sp[[i]][, "EPcc"] - epcccl.sp[[i]][, "EPcl"]
+  epcccl.prop[[i]] <- sum(res > 0) / nrow(epcccl.sp[[i]])
+  
+}
+
+
+
+ep.range <- cbind(unlist(ep.range), sapply(ep.sp, median), sapply(ep.sp, mean), unlist(epcccl.prop)) %>% as.data.frame
+colnames(ep.range) <- c("ep.range", "ep.median","ep.mean", "epcccl.prop")
 ep.range$spname <- rownames(ep.range)
 dat <- merge(ep.range, sp, by = "spname")
 dat2 <- data.frame(c(unlist(sp.occ)), names(sp.occ))
