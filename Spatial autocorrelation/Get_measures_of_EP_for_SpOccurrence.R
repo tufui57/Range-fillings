@@ -4,7 +4,7 @@
 
 library(dplyr)
 
-genus_name <- "Chionochloa"
+genus_name <- "Acaena"
 # Import species occurrence data
 load(paste(".//Scores_", genus_name, "_landcover_worldclim1_5km.data", sep = ""))
 
@@ -104,6 +104,7 @@ if(genus_name=="Acaena"){
 
 }else{
   sp <- read.csv("Y://NicheVolume_age_chion.csv")
+  colnames(sp)[4] <- "niche_volume"
 }
 
 names(ep.range) <- spname
@@ -119,7 +120,7 @@ png(paste("Y://", genus_name, "EPrange_speciesNicheVolume.png", sep=""))
 plot(dat$ep.range, dat$niche_volume, main = genus_name, xlab = "EP range", ylab = "Climatic niche volume")
 dev.off()
 
-png(paste("Y://", genus_name, "EPmean_speciesNicheVolume.png", sep=""))
+png(paste("Y://", genus_name, "EPmean_speciesNicheVolume.png", sep = ""))
 plot(dat$ep.mean, dat$niche_volume, main = genus_name, xlab = "EP mean", ylab = "Climatic niche volume")
 dev.off()
 
@@ -135,6 +136,9 @@ png(paste("Y://", genus_name, "speciesRange_speciesNicheVolume.png", sep=""))
 plot(dat$c.unlist.sp.occ.., dat$niche_volume, main = genus_name, xlab = "Speices range", ylab = "Climatic niche volume")
 dev.off()
 
+summary(
+  lm(dat$niche_volume ~ log10(dat$c.unlist.sp.occ.. ))
+)
 
 #################################################################################################################
 ### Epcc-cl vs. species occurrences

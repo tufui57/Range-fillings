@@ -58,6 +58,10 @@ names(pred) <- folders
 ensambleProj.name = "SAIdiff_4Mar19_ensamble"
 binary = "binary"
 
+### Model names for BIOMOD using only current climates
+# BIOMODproj.name = "5km_15Jan19"
+# ensambleModel.name = "5km_15Jan19_ensamble"
+
 save(pred, file = paste("Y://ensemblePredictionBinary_", genus_name, ensambleProj.name, binary,".data", sep = ""))
 
 ############################################################################################################
