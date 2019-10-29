@@ -6,7 +6,7 @@ library(dplyr)
 library(ggplot2)
 source(".\\GitHub\\Range-fillings\\Spatial autocorrelation\\F_randomSampling_EP_from_climatically_suitable_areas.R")
 
-genus_name <- "Chionochloa"
+genus_name <- "Acaena"
 load(paste("Y://ensemblePredictionBinary_", genus_name, "5km_15Jan19_ensamblebinary.data", sep = ""))
 
 a <- sapply(pred, function(x){
@@ -30,10 +30,14 @@ for(i in 1:length(pred2)){
   a[[i]] <- test2[!is.na(test2$V3),] %>% .[.$V3 == 1,]
 }
 
-##############################################################################
-### Data preparation
-##############################################################################
 
+############################################################
+# Random sampling
+############################################################
+
+### Data preparation
+
+genus_name <- "Acaena"
 # Import species occurrence data
 load(paste(".//Scores_", genus_name, "_landcover_worldclim1_5km.data", sep = ""))
 
@@ -51,19 +55,12 @@ colnames(epcl)[ncol(epcl)] <- "EPcl"
 
 scores.ep <- merge(scores, epcc[, c("x", "y", "EPcc")], by = c("x","y")) %>% 
   merge(., epcl[, c("x","y","EPcl")], by = c("x","y"))
-
-colnames(scores.ep) <- gsub("_", ".", colnames(scores.ep))
-
-##############################################################
-# Random sampling
-############################################################
-
 scores.ep$EPcccl <- (scores.ep$EPcc - scores.ep$EPcl)
 
-### Sample from predicted presence
-random.ep <- randomsampling(spname, scores.ep, a, "EPcccl", 1000, c("x","y"))
+colnames(scores.ep) <- gsub("_",".", colnames(scores.ep))
 
-# random.epcc <- randomsampling(spname, scores.ep, a, "EPcc", 1000, c("x","y"))
+### Sample EPcc-cl from predicted presence
+random.ep <- randomsampling(spname, scores.ep, a, "EPcccl", 1000, c("x","y"))
 
 random.ep.prop.positive <- lapply(random.ep, function(x){
   res<-list()
@@ -78,16 +75,109 @@ random.ep.prop.positive <- lapply(random.ep, function(x){
 }
 )
 
-errors <- do.call(cbind, random.ep.prop.positive) %>% t
+### Sample EPcc from predicted presence
+random.epcc <- randomsampling(spname, scores.ep, a, "EPcc", 1000, c("x","y"))
 
-colnames(errors) <- c("error.max.prop", "error.min.prop")
+random.ep.mean <- lapply(random.epcc, function(x){
+  res<-list()
+  for(i in 1:nrow(x)){
+    res[[i]] <- mean(x[i,])
+  }
+  return(
+    c(
+      max(unlist(res)), min(unlist(res))
+    )
+  )
+}
+)
+random.ep.median <- lapply(random.epcc, function(x){
+  res<- list()
+  for(i in 1:nrow(x)){
+    res[[i]] <- median(x[i,])
+  }
+  
+  return(
+    c(
+      max(unlist(res)), min(unlist(res))
+    )
+  )
+}
+)
+random.ep.range <- lapply(random.epcc, function(x){
+  res<- list()
+  for(i in 1:nrow(x)){
+    res[[i]] <- (max(x[i,]) - min(x[i,]))
+  }
+  return(
+    c(
+      max(unlist(res)), min(unlist(res))
+    )
+  )
+}
+)
+
+errors <- cbind(
+  do.call(cbind, random.ep.range) %>% t,
+  do.call(cbind, random.ep.mean) %>% t,
+  do.call(cbind, random.ep.median) %>% t,
+  do.call(cbind, random.ep.prop.positive) %>% t
+)
+colnames(errors) <- c("error.max.range", "error.min.range", 
+                      "error.max.mean", "error.min.mean", 
+                      "error.max.median", "error.min.median",
+                      "error.max.prop", "error.min.prop"
+                      )
 errors2 <- as.data.frame(errors)
 
 errors2$spname <- spname
 
-dat <- read.csv(paste("Y://randomsampledEP", genus_name,".csv"))
+dat <- read.csv(paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
+
 dat$spname <- gsub("_", ".", dat$spname)
 dat2 <- merge(dat, errors2, by = "spname")
+
+#################################################################################################################
+### Draw plots
+#################################################################################################################
+# Default line plot
+p <- ggplot(dat2, aes(x = c.unlist.sp.occ.., y = ep.range)) + 
+  geom_line() +
+  geom_point()+
+  geom_errorbar(aes(ymin = error.min.range, ymax = error.max.range), width=.2, col = "red",
+                position=position_dodge(0.05))
+
+png(paste("Y://", genus_name, "_eprange.png", sep=""))
+# Finished line plot
+p + labs(title = genus_name, y = "EP range", x = "Species range") +
+  theme_classic()
+dev.off()
+
+# Default line plot
+p <- ggplot(dat2, aes(x = c.unlist.sp.occ.., y = ep.mean)) + 
+  geom_line() +
+  geom_point()+
+  geom_errorbar(aes(ymin = error.min.mean, ymax = error.max.mean), width=.2, col = "red",
+                position=position_dodge(0.05))
+
+png(paste("Y://", genus_name, "_epmean.png", sep=""))
+# Finished line plot
+p + labs(title = genus_name, y = "EP mean", x = "Species range") +
+  theme_classic()
+dev.off()
+
+
+# Default line plot
+p <- ggplot(dat2, aes(x = c.unlist.sp.occ.., y = ep.median)) + 
+  geom_line() +
+  geom_point()+
+  geom_errorbar(aes(ymin = error.min.median, ymax = error.max.median), width=.2, col = "red",
+                position=position_dodge(0.05))
+
+png(paste("Y://", genus_name, "_epmedian.png", sep=""))
+# Finished line plot
+p + labs(title = genus_name, y = "EP median", x = "Species range") +
+  theme_classic()
+dev.off()
 
 #################################################################################################################
 ### Get Epcc-cl of species occurrence records
@@ -98,7 +188,7 @@ epcccl.sp <- list()
 for(i in spname){
   epcccl.sp[[i]] <- scores.ep[scores.ep[, i] == 1, c("EPcc", "EPcl")]
 }
-names(epcccl.sp)<- spname
+names(epcccl.sp) <- spname
 
 # Proportions of areas with species occurrence records and positive EPcc-cl 
 epcccl.prop <- list()
@@ -117,10 +207,10 @@ dat3 <- merge(dat2, data.frame(spname, unlist(epcccl.prop)), by = "spname")
 # Default line plot
 p <- ggplot(dat3, aes(x = c.unlist.sp.occ.., y = unlist.epcccl.prop.)) + 
   geom_line() +
-  geom_point()+
+  geom_point() +
   geom_errorbar(aes(ymin = error.min.prop, ymax = error.max.prop), col = "red")
 
-png(paste("Y://", genus_name, "speciesRange_Prop_potiveEPcc_cl.png", sep=""))
+png(paste("Y://", genus_name, "speciesRange_Prop_potiveEPcc_cl.png", sep = ""))
 # Finished line plot
 p + labs(title = genus_name, y = "Proportion of positive EPcc-cl", x = "Species range") +
   theme_classic()
@@ -128,12 +218,12 @@ dev.off()
 
 
 # Default line plot
-p <- ggplot(dat3, aes(x = niche.volume, y = unlist.epcccl.prop.)) + 
+p <- ggplot(dat3, aes(x = niche_volume, y = unlist.epcccl.prop.)) + 
   geom_line() +
-  geom_point()+
+  geom_point() +
   geom_errorbar(aes(ymin = error.min.prop, ymax = error.max.prop), col = "red")
 
-png(paste("Y://", genus_name, "speciesNiche_Prop_potiveEPcc_cl.png", sep=""))
+png(paste("Y://", genus_name, "speciesNiche_Prop_potiveEPcc_cl.png", sep = ""))
 # Finished line plot
 p + labs(title = genus_name, y = "Proportion of positive EPcc-cl", x = "Species niche volume") +
   theme_classic()
