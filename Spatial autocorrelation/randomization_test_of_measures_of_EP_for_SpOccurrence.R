@@ -150,7 +150,7 @@ p <- ggplot(dat2, aes_string(x = "niche_volume", y = "ep.range")) +
   geom_point() +
   geom_errorbar(aes(ymin = error.min.range, ymax = error.max.range), col = "red")
 
-png(paste("Y://", genus_name, "_eprange.png", sep=""))
+png(paste("Y://", genus_name, "_eprange_nicheVolme.png", sep=""))
 # Finished line plot
 p + labs(title = genus_name, y = "EP range", x = "Species niche volume") +
   theme_classic()
@@ -163,7 +163,7 @@ p <- ggplot(dat2, aes(x = niche_volume, y = ep.mean)) +
   geom_point() +
   geom_errorbar(aes(ymin = error.min.mean, ymax = error.max.mean), col = "red")
 
-png(paste("Y://", genus_name, "_epmean.png", sep=""))
+png(paste("Y://", genus_name, "_epmean_nicheVolme.png", sep=""))
 # Finished line plot
 p + labs(title = genus_name, y = "EP mean", x = "Species niche volume") +
   theme_classic()
@@ -177,7 +177,7 @@ p <- ggplot(dat2, aes(x = niche_volume, y = ep.median)) +
   geom_errorbar(aes(ymin = error.min.median, ymax = error.max.median), col = "red",
                 position = position_dodge(0.05))
 
-png(paste("Y://", genus_name, "_epmedian.png", sep=""))
+png(paste("Y://", genus_name, "_epmedian_nicheVolme.png", sep=""))
 # Finished line plot
 p + labs(title = genus_name, y = "EP median", x = "Species niche volume") +
   theme_classic()
