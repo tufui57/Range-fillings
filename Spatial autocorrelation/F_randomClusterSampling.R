@@ -1,5 +1,5 @@
 #############################################################################################################
-### Ckuster sampling
+### Cluster sampling
 #############################################################################################################
 ### Random sampling from the same sized square as the observed sepcies occurrences.
 
@@ -63,28 +63,4 @@ repeat_ClusterSampling <- function(spname,
 
 
 
-genus_name <- "Chionochloa"
-# Import species occurrence data
-load(paste("Y://Scores_", genus_name, "_landcover5km.data", sep = ""))
 
-# Load EPcc
-load("Y://EPcc_NZ_4var_test.data")
-epcc <- load("Y://EPcc_NZ_4var_test.data")
-epcc <- get(epcc)
-colnames(epcc)[ncol(epcc)] <- "EPcc"
-
-# Load EPcl
-load("Y://EPcl_NZ_4var.data")
-epcl <- load("Y://EPcl_NZ_4var.data")
-epcl <- get(epcl)
-colnames(epcl)[ncol(epcl)] <- "EPcl"
-
-scores.ep <- merge(scores, epcc[, c("x", "y", "EPcc")], by = c("x","y")) %>% 
-  merge(., epcl[, c("x","y","EPcl")], by = c("x","y"))
-spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
-
-
-test <- repeat_ClusterSampling(spname, scores.ep, 
-                       valueName = "EPcc", iteration = 10, coordinateNames = c("x","y"))
-
-lapply(ran.ep, lapply, mean)
