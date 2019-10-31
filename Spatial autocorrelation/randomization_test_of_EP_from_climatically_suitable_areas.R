@@ -4,7 +4,7 @@
 library(raster)
 library(dplyr)
 library(ggplot2)
-source(".\\GitHub\\Range-fillings\\Spatial autocorrelation\\F_randomSampling_EP_from_climatically_suitable_areas.R")
+source(".\\Range-fillings\\Spatial autocorrelation\\F_randomSampling_EP_from_climatically_suitable_areas.R")
 
 ############################################################
 # Import predicted presence
@@ -42,17 +42,17 @@ for(i in 1:length(pred2)){
 ### Data preparation
 
 # Import species occurrence data
-load(paste(".//Scores_", genus_name, "_landcover_worldclim1_5km.data", sep = ""))
+load(paste("Y://Scores_", genus_name, "_landcover_worldclim1_5km.data", sep = ""))
 
 # Load EPcc
-load(".//EPcc_NZ_4var_test.data")
-epcc <- load(".//EPcc_NZ_4var_test.data")
+load("Y://EPcc_NZ_4var_test.data")
+epcc <- load("Y://EPcc_NZ_4var_test.data")
 epcc <- get(epcc)
 colnames(epcc)[ncol(epcc)] <- "EPcc"
 
 # Load EPcl
-load(".//EPcl_NZ_4var.data")
-epcl <- load(".//EPcl_NZ_4var.data")
+load("Y://EPcl_NZ_4var.data")
+epcl <- load("Y://EPcl_NZ_4var.data")
 epcl <- get(epcl)
 colnames(epcl)[ncol(epcl)] <- "EPcl"
 
@@ -63,7 +63,7 @@ scores.ep$EPcccl <- (scores.ep$EPcc - scores.ep$EPcl)
 colnames(scores.ep) <- gsub("_",".", colnames(scores.ep))
 
 ### Sample EPcc-cl from predicted presence
-random.ep <- randomsampling(spname, scores.ep, a, "EPcccl", 1000, c("x","y"))
+random.ep <- randomsampling(spname, scores.ep, a, "EPcccl", 10, c("x","y"))
 
 random.ep.prop.positive <- lapply(random.ep, function(x){
   res<-list()

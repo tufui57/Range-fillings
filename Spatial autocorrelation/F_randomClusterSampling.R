@@ -47,6 +47,9 @@ repeat_ClusterSampling <- function(spname,
       sample.area <- data1
     }
     
+    # Remove NA values from species occurrence records
+    data1 <- data1[!is.na(data1[, spname[i]]), ]
+    
     samples <- list()
     
     for(j in 1:iteration){
@@ -61,5 +64,3 @@ repeat_ClusterSampling <- function(spname,
   return(ran.ep)
   
 }
-
-

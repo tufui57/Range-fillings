@@ -3,6 +3,7 @@
 #############################################################################################################
 source(".//Range-fillings//Spatial autocorrelation//F_randomClusterSampling.R")
 library(dplyr)
+library(biomod2)
 
 genus_name <- "Chionochloa"
 if(genus_name == "Nothofagus"){
@@ -29,12 +30,35 @@ if(genus_name == "Nothofagus"){
   
   scores.ep <- merge(scores, epcc[, c("x", "y", "EPcc")], by = c("x","y")) %>% 
     merge(., epcl[, c("x","y","EPcl")], by = c("x","y"))
-  spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
   
+  colnames(scores.ep) <- gsub("_",".", colnames(scores.ep))
+  
+  load(paste("Y://ensemblePredictionBinary_", genus_name, "5km_15Jan19_ensamblebinary.data", sep = ""))
+  
+  a <- sapply(pred, function(x){
+    class(x) == "RasterLayer"
+  } )
+  
+  pred2 <- pred[a]
+  
+  spname <- names(pred2)
+  
+  a <- list()
+  for(i in 1:length(pred2)){
+    
+    test <- 
+      tryCatch({
+        cbind(coordinates(pred2[[i]]), values(pred2[[i]]))
+      }, erorr = function(e) e
+      )
+    
+    test2 <- as.data.frame(test)
+    a[[i]] <- test2[!is.na(test2$V3),] %>% .[.$V3 == 1,]
+  }
 }
 
-ran.ep <- repeat_ClusterSampling(spname, data1 = scores.ep, 
-                                 iteration = 500, coordinateNames = c("x","y"))
+ran.ep <- repeat_ClusterSampling(spname, data1 = scores.ep, data2 = a,
+                                 iteration = 10, coordinateNames = c("x","y"))
 # EP mean
 mean.ep <- sapply(ran.ep, function(x){
   sapply(x, function(y) mean(y$EPcc))
