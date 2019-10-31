@@ -11,20 +11,15 @@
 ## 
 ############################################################################################################
 
-
-##################################################################################################################
-########################        Load libraries
-##################################################################################################################
-
 library(rgdal)
 library(raster)
 library(dplyr)
+library(biomod2)
 
 ######################################################################################################
 ## NOTE! MAKE SURE package "biomod2" is the latest version! IF NOT, INSTALL AGAIN!
 ## Otherwise, you get errors on model developing!
 ######################################################################################################
-library(biomod2)
 
 # Load functions to develop BIOMOD
 source(".\\Range-fillings\\F_Create_Package_BIOMOD.r")
@@ -89,7 +84,7 @@ setwd("Y://BIOMOD for Grid2")
 ## Takes a while to run... Don't run on laptop! Slow!
 #########################################################
 
-# try(lapply(spname, runBiomod, data = climate.occ3, myExpl = myExpl, folder.name = "7Nov18"),
+# try(lapply(spname, runBiomod, data = climate.occ3, myExpl = myExpl, folder.name = "31Oct19"),
 #     silent = FALSE)
 
 for(i in spname){
@@ -122,85 +117,13 @@ folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus
 for(i in folders){
   tryCatch(
     biomodProjection_fromSavedBiomodModels(i,
-    modelname = "7Nov18",
-    proj.name = "7Nov18"),
+    modelname = "31Oct19",
+    proj.name = "31Oct19"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
 }
 
-#################################################################################################################
-########################   Model evaluations     
-#################################################################################################################
-
-# Load saved BIOMOD object. 
-# Use get(model.out file name). Not just load()
-myBiomodModelOut <- list()
-for(i in folders){
-  myBiomodModelOut[[i]] <- tryCatch(
-  load(paste("Y://BIOMOD for Grid2//", i, "//", i, ".7Nov18.models.out", sep=""))
-  )
-}
-
-### Evaluation
-lapply(myBiomodModelOut, function(x){
-  print(x)
-  get_evaluations(get(x))
-  }
-  )
-
-lapply(myBiomodModelOut, function(x){
-  print(x)
-  get_calib_lines(get(x))
-}
-)
-### Variable importance
-lapply(myBiomodModelOut, function(x){
-  print(x)
-  get_variables_importance(get(x))
-}
-)
-
-
-#################################################################################################################
-########################        Plot BIOMOD projections
-#################################################################################################################
-
-## PLOTS THE PROJECTIONS
-setwd("Y:\\BIOMOD for Grid2")
-# get folder names
-folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus_name, .) %>% list.dirs(getwd(), full.names = FALSE, recursive = F)[.]
-
-projectionPlot <- function(spname, # species name
-                           proj.name
-){
-  # load projection data
-  modelname <- load(paste(".\\", spname, "\\proj_", proj.name, "\\", spname, ".", proj.name,  ".projection.out",
-                  sep=""))
-  model <- get(modelname)
-  
-  ## plot each projection separately 
-  proj_val <- get_predictions(model)
-  
-  for (i in 1:length(proj_val@layers)) {
-    
-    png(filename = paste(".\\", spname, "\\proj_", proj.name, "\\", names(subset(proj_val, i)), ".png", sep=""), 
-        height = 900, width = 750, units = "px")
-    plot(proj_val[[i]])
-    title(names(subset(proj_val, i)))
-    dev.off()
-  }
-  
-}
-
-
-for(i in folders){
-  tryCatch(
-    projectionPlot(i, proj.name = "7Nov18"),
-    error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
-    
-  )
-}
 #################################################################################################################
 ########################        BIOMOD ensamble models
 #################################################################################################################
@@ -272,7 +195,7 @@ ensembleModelling_projection <- function(spname, # species name
 for(i in folders){
   tryCatch(
     ensembleModelling_projection(i, 
-       folder.name = "7Nov18", BIOMODproj.name = "7Nov18", ensambleProj.name = "7Nov18_ensamble"),
+       folder.name = "31Oct19", BIOMODproj.name = "31Oct19", ensambleProj.name = "31Oct19_ensamble"),
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
     
   )
@@ -306,28 +229,8 @@ EMprojectionPlot <- function(spname, # species name
 # If there are species whose BIOMOD failed and no grd file was generated, you don't get the plot.
 for(i in folders){
   tryCatch(
-  EMprojectionPlot(i, proj.name = "7Nov18_ensamble"),
+  EMprojectionPlot(i, proj.name = "31Oct19_ensamble"),
   error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
   
     )
 }
-
-#################################################################################################################
-########################   Model evaluations     
-#################################################################################################################
-
-# Load saved BIOMOD object. 
-# Use get(model.out file name). Not just load()
-myBiomodModelOut <- list()
-for(i in folders){
-  myBiomodModelOut[[i]] <- tryCatch(
-    load(paste("Y://BIOMOD for Grid2//", i, "//", i, ".7Nov18ensemble.models.out", sep=""))
-  )
-}
-
-### Evaluation
-lapply(myBiomodModelOut, function(x){
-  print(x)
-  get_evaluations(get(x))
-}
-)

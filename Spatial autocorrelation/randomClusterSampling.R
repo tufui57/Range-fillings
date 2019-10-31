@@ -25,7 +25,7 @@ scores.ep <- merge(scores, epcc[, c("x", "y", "EPcc")], by = c("x","y")) %>%
 spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
 
 ran.ep <- repeat_ClusterSampling(spname, data1 = scores.ep, 
-                                 iteration = 1000, coordinateNames = c("x","y"))
+                                 iteration = 500, coordinateNames = c("x","y"))
 # EP mean
 mean.ep <- sapply(ran.ep, function(x){
   sapply(x, function(y) mean(y$EPcc))
@@ -33,6 +33,8 @@ mean.ep <- sapply(ran.ep, function(x){
 )
 
 hist(mean.ep[,10])
+colnames(mean.ep) <- spname
+
 
 # EP range
 range.ep <- sapply(ran.ep, function(x){
@@ -41,6 +43,8 @@ range.ep <- sapply(ran.ep, function(x){
     })
 }
 )
+
+colnames(range.ep) <- spname
 
 # Proportion of positive EPcc-cl
 prop.ep <- sapply(ran.ep, function(x){
@@ -52,4 +56,37 @@ prop.ep <- sapply(ran.ep, function(x){
 }
 )
 
+colnames(prop.ep) <- spname
+
+sp <- read.csv(paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
+
+spname <- sp$spname
+  
+### Significance test of EP valuse of species habitats based on the distribution of randomly sampled points
+
+significance.test <- function(ep.data){
+  sig <- list()
+for(i in spname){
+  dat <- sp[sp$spname == i,]
+  percentile <- quantile(ep.data[,i], probs = c(2.5/100, 1 - 2.5/100))
+  
+  sig[[i]] <- "NA"
+  if(dat$epcccl.prop <= percentile[1]){
+    sig[[i]] <- "lower"
+  } 
+   
+  if(dat$epcccl.prop >= percentile[2]){
+    sig[[i]] <- "higher"
+  } 
+  
+}
+  return(sig)
+}
+
+sig <- cbind(unlist(significance.test(prop.ep)), unlist(significance.test(range.ep)),
+             unlist(significance.test(mean.ep))
+)
+colnames(sig) <- c("EPcccl.prop","EPcc.range","EPcc.mean")
+
+write.csv(sig, file = paste("Y://",genus_name,"_significant_EP.csv", sep=""))
 
