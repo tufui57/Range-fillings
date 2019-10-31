@@ -3,7 +3,7 @@
 #############################################################################################################
 ### Random sampling from the same sized square as the observed sepcies occurrences.
 
-clustersampling <- function(data1, # an observed species distribution
+clustersampling <- function(dat, # an observed species distribution
                             region, # data of whole region
                             coordinateNames
   
@@ -11,8 +11,8 @@ clustersampling <- function(data1, # an observed species distribution
   region$id <- 1:nrow(region)
   
   # Measure the size of square of the observed sepcies occurrences
-  range.x <- max(data1[, coordinateNames[1]]) - min(data1[, coordinateNames[1]])
-  range.y <- max(data1[, coordinateNames[2]]) - min(data1[, coordinateNames[2]])
+  range.x <- max(dat[, coordinateNames[1]]) - min(dat[, coordinateNames[1]])
+  range.y <- max(dat[, coordinateNames[2]]) - min(dat[, coordinateNames[2]])
   
   # Choose the first sample
   first.sample <- region[sample(1:nrow(region), 1),]
@@ -25,7 +25,7 @@ clustersampling <- function(data1, # an observed species distribution
   
   
   # Sample the rest of points from the neighbourhood square of the first sample
-  samples <- region[sample(neighbour.xy$id, (nrow(data1) - 1)),]
+  samples <- region[sample(neighbour.xy$id, (nrow(dat) - 1)),]
   return(samples)
 }
 
@@ -51,7 +51,8 @@ repeat_ClusterSampling <- function(spname,
     
     for(j in 1:iteration){
       
-      samples[[j]] <- clustersampling(data1[data1[, spname[i]] == 1, ], sample.area, coordinateNames)
+      samples[[j]] <- clustersampling(dat = data1[data1[, spname[i]] == 1, ], 
+                                      region = sample.area, coordinateNames = coordinateNames)
       
     }
     ran.ep[[i]] <- samples
@@ -60,7 +61,5 @@ repeat_ClusterSampling <- function(spname,
   return(ran.ep)
   
 }
-
-
 
 

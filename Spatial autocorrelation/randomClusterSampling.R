@@ -1,7 +1,8 @@
 #############################################################################################################
 ### Cluster sampling
 #############################################################################################################
-source(".//GitHub//Range-fillings//Spatial autocorrelation//F_randomClusterSampling.R")
+source(".//Range-fillings//Spatial autocorrelation//F_randomClusterSampling.R")
+library(dplyr)
 
 genus_name <- "Chionochloa"
 # Import species occurrence data
@@ -26,10 +27,12 @@ spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(s
 ran.ep <- repeat_ClusterSampling(spname, data1 = scores.ep, 
                                  iteration = 1000, coordinateNames = c("x","y"))
 # EP mean
-mean.ep <-sapply(ran.ep, function(x){
+mean.ep <- sapply(ran.ep, function(x){
   sapply(x, function(y) mean(y$EPcc))
 }
 )
+
+hist(mean.ep[,10])
 
 # EP range
 range.ep <- sapply(ran.ep, function(x){
