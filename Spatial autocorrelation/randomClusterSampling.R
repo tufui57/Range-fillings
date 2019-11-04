@@ -3,13 +3,17 @@
 #############################################################################################################
 source(".//Range-fillings//Spatial autocorrelation//F_randomClusterSampling.R")
 library(dplyr)
-library(ggplot2)
+library(raster)
 
-genus_name <- "Acaena"
+genus_name <- "Nothofagus"
 if(genus_name == "Nothofagus"){
   # Import species occurrence data
   scores.ep <- read.csv("Y://Nothofagus_in_nz.csv")
   spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
+  
+  scores.ep <- scores.ep[!is.na(scores.ep[, spname[1]]), ]
+  
+  load(paste("Y://ensemblePredictionBinary_", genus_name, "31Oct19_ensamblebinary.data", sep = ""))
   
 }else{
   
@@ -30,160 +34,52 @@ if(genus_name == "Nothofagus"){
   
   scores.ep <- merge(scores, epcc[, c("x", "y", "EPcc")], by = c("x","y")) %>% 
     merge(., epcl[, c("x","y","EPcl")], by = c("x","y"))
-  spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
   
+  spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
+  colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))] <- gsub("_",".",spname)
+  
+  load(paste("Y://ensemblePredictionBinary_", genus_name, "5km_15Jan19_ensamblebinary.data", sep = ""))
 }
 
 ran.ep <- repeat_ClusterSampling(spname, data1 = scores.ep, 
                                  iteration = 1000, coordinateNames = c("x","y"))
 names(ran.ep) <- spname
 
-#############################################################################################################  
-### Significance test of EP valuse of species habitats based on the distribution of randomly sampled points
+save(ran.ep, file = paste("Y://", genus_name, "_randomClusterSamples.data", sep = ""))
+
+
+#############################################################################################################
+### Random sampling from climatically suitable areas
 #############################################################################################################
 
-# EP mean
-mean.ep <- sapply(ran.ep, function(x){
-  sapply(x, function(y) mean(y$EPcc))
-}
-)
+a <- sapply(pred, function(x){
+  class(x) == "RasterLayer"
+} )
 
-hist(mean.ep[,4])
-colnames(mean.ep) <- spname
+pred2 <- pred[a]
 
+spname <- names(pred2)
 
-# EP range
-range.ep <- sapply(ran.ep, function(x){
-  sapply(x, function(y){
-    max(y$EPcc) - min(y$EPcc)
-    })
-}
-)
-
-colnames(range.ep) <- spname
-
-# Proportion of positive EPcc-cl
-prop.ep <- sapply(ran.ep, function(x){
-  sapply(x, function(y){
-   epcccl <- (y$EPcc - y$EPcl)
-   epcccl.prop <- sum(epcccl > 0) / nrow(y)
-   return(epcccl.prop)
-  })
-}
-)
-
-colnames(prop.ep) <- spname
-
-
-sp.occ <- list()
-for(i in spname){
-  sp.occ[[i]] <- sum(scores.ep[, i] == 1, na.rm = T)
-}
-names(sp.occ) <- spname
-
-
-sp <- read.csv(paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
-
-spname <- sp$spname
-
-## Significance test of EP valuse of species habitats based on the distribution of randomly sampled points
-
-significance.test <- function(ep.data, measure){
-  sig <- list()
-for(i in spname){
-  dat <- sp[sp$spname == i,]
-  percentile <- quantile(ep.data[,i], probs = c(2.5/100, 1 - 2.5/100))
+a <- list()
+for(i in 1:length(pred2)){
   
-  sig[[i]] <- "NA"
-  if(dat[, measure] <= percentile[1]){
-    sig[[i]] <- "lower"
-  } 
-   
-  if(dat[, measure] >= percentile[2]){
-    sig[[i]] <- "higher"
-  } 
+  test <- 
+    tryCatch({
+      cbind(coordinates(pred2[[i]]), values(pred2[[i]]))
+    }, erorr = function(e) e
+    )
   
-}
-  return(sig)
-}
-
-sig <- cbind(unlist(sp.occ), 
-             unlist(significance.test(prop.ep, "epcccl.prop")), 
-             unlist(significance.test(range.ep, "ep.range")), 
-             unlist(significance.test(mean.ep, "ep.mean"))
-) %>% as.data.frame
-colnames(sig) <- c("Range.size", "EPcccl.prop", "EPcc.range", "EPcc.mean")
-
-write.csv(sig, file = paste("Y://", genus_name, "_significant_EP.csv", sep=""))
-
-#################################################################################################################
-### Draw plots; EP vs. species range
-#################################################################################################################
-data2 <- create_dataframe_EP_error(ran.ep)
-
-dat <- read.csv(paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
-
-dat$spname <- gsub("_", ".", dat$spname)
-
-data2$spname <- gsub("_", ".", data2$spname)
-
-dat2 <- merge(dat, data2, by = "spname")
-
-if(genus_name=="Nothofagus"){
-  dat2 <- cbind(unlist(sp.occ), dat2)
-  colnames(dat2)[1] <- "sp.occ"
-}else{
-  colnames(dat2)[colnames(dat2)=="c.unlist.sp.occ.."] <- "sp.occ"
+  test2 <- as.data.frame(test)
+  a[[i]] <- test2[!is.na(test2$V3),] %>% .[.$V3 == 1,]
 }
 
+spname <-  names(pred2)
 
-# Default line plot
-p <- ggplot(dat2, aes(x = sp.occ, y = ep.range)) + 
-  geom_line() +
-  geom_point() +
-  geom_errorbar(aes(ymin = error.min.range, ymax = error.max.range), width = .2, col = "red",
-                position = position_dodge(0.05)
-                )+
-  geom_errorbar(aes(ymin = error.2.5.range, ymax = error.97.5.range), width = .2, col = "yellow",
-                position = position_dodge(0.05)
-  )
+### Sample EPcc-cl from predicted presence
+random.ep <- repeat_randomSampling(spname, data1 = scores.ep, data2 = a, 
+                                   iteration = 1000, coordinateNames = c("x","y")
+)
+names(random.ep) <- names(pred2)
 
-png(paste("Y://", genus_name, "_eprange_cluster.png", sep=""))
-# Finished line plot
-p + labs(title = genus_name, y = "EP range", x = "Species range") +
-  theme_classic()
-dev.off()
+save(random.ep, file = paste("Y://", genus_name, "_randomSamples_suitableArea.data", sep = ""))
 
-# Default line plot
-p <- ggplot(dat2, aes(x = sp.occ, y = ep.mean)) + 
-  geom_line() +
-  geom_point()+
-  geom_errorbar(aes(ymin = error.min.mean, ymax = error.max.mean), width = .2, col = "red",
-                position=position_dodge(0.05)
-                ) +
-  geom_errorbar(aes(ymin = error.2.5.mean, ymax = error.97.5.mean), width = .2, col = "yellow",
-                position = position_dodge(0.05)
-  )
-
-png(paste("Y://", genus_name, "_epmean_cluster.png", sep = ""))
-# Finished line plot
-p + labs(title = genus_name, y = "EP mean", x = "Species range") +
-  theme_classic()
-dev.off()
-
-
-# Default line plot
-p <- ggplot(dat2, aes(x = sp.occ, y = epcccl.prop)) + 
-  geom_line() +
-  geom_point() +
-  geom_errorbar(aes(ymin = error.min.prop, ymax = error.max.prop), col = "red") +
-  geom_errorbar(aes(ymin = error.2.5.prop, ymax = error.97.5.prop), width = .2, col = "yellow",
-                position = position_dodge(0.05)
-  )
-
-
-png(paste("Y://", genus_name, "speciesRange_Prop_potiveEPcc_cl_cluster.png", sep = ""))
-# Finished line plot
-p + labs(title = genus_name, y = "Proportion of positive EPcc-cl", x = "Species range") +
-  theme_classic()
-dev.off()
