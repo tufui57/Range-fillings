@@ -1,15 +1,22 @@
 #############################################################################################################
-### Cluster sampling
+### Cluster sampling from climatically suitable areas
 #############################################################################################################
+# This sampling might not work for species with narrow climate range.
+# For those species, number of climatically suitable grid cells within a square can be not large enough
+# to sample the same number of cells as the observed species occurrences.
+
 source(".//Range-fillings//Spatial autocorrelation//F_randomClusterSampling.R")
 library(dplyr)
 library(biomod2)
 
-genus_name <- "Chionochloa"
+genus_name <- "Nothofagus"
 if(genus_name == "Nothofagus"){
   # Import species occurrence data
   scores.ep <- read.csv("Y://Nothofagus_in_nz.csv")
-  spname <- colnames(scores)[grepl(paste("^", genus_name, sep = ""), colnames(scores))]
+  spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
+  
+  ### Load predicted presences
+  load(paste("Y://ensemblePredictionBinary_", genus_name, "31Oct19_ensamblebinary.data", sep = ""))
   
 }else{
   
@@ -33,39 +40,44 @@ if(genus_name == "Nothofagus"){
   
   colnames(scores.ep) <- gsub("_",".", colnames(scores.ep))
   
+  ### Load predicted presences
   load(paste("Y://ensemblePredictionBinary_", genus_name, "5km_15Jan19_ensamblebinary.data", sep = ""))
-  
-  a <- sapply(pred, function(x){
-    class(x) == "RasterLayer"
-  } )
-  
-  pred2 <- pred[a]
-  
-  spname <- names(pred2)
-  
-  a <- list()
-  for(i in 1:length(pred2)){
-    
-    test <- 
-      tryCatch({
-        cbind(coordinates(pred2[[i]]), values(pred2[[i]]))
-      }, erorr = function(e) e
-      )
-    
-    test2 <- as.data.frame(test)
-    a[[i]] <- test2[!is.na(test2$V3),] %>% .[.$V3 == 1,]
-  }
+
 }
 
+### Load predicted presences
+
+a <- sapply(pred, function(x){
+  class(x) == "RasterLayer"
+} )
+
+pred2 <- pred[a]
+
+spname <- names(pred2)
+
+a <- list()
+for(i in 1:length(pred2)){
+  
+  test <- 
+    tryCatch({
+      cbind(coordinates(pred2[[i]]), values(pred2[[i]]))
+    }, erorr = function(e) e
+    )
+  
+  test2 <- as.data.frame(test)
+  a[[i]] <- test2[!is.na(test2$V3),] %>% .[.$V3 == 1,]
+}
+
+### Random sampling
 ran.ep <- repeat_ClusterSampling(spname, data1 = scores.ep, data2 = a,
-                                 iteration = 10, coordinateNames = c("x","y"))
+                                 iteration = 1000, coordinateNames = c("x","y"))
 # EP mean
 mean.ep <- sapply(ran.ep, function(x){
   sapply(x, function(y) mean(y$EPcc))
 }
 )
 
-hist(mean.ep[,10])
+hist(mean.ep[,1])
 colnames(mean.ep) <- spname
 
 
@@ -92,8 +104,8 @@ prop.ep <- sapply(ran.ep, function(x){
 colnames(prop.ep) <- spname
 
 sp <- read.csv(paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
+sp$spname <- gsub("_", ".", sp$spname)
 
-spname <- sp$spname
   
 ### Significance test of EP valuse of species habitats based on the distribution of randomly sampled points
 
@@ -103,7 +115,7 @@ for(i in spname){
   dat <- sp[sp$spname == i,]
   percentile <- quantile(ep.data[,i], probs = c(2.5/100, 1 - 2.5/100))
   
-  sig[[i]] <- "NA"
+  sig[[i]] <- "NonSig"
   if(dat$epcccl.prop <= percentile[1]){
     sig[[i]] <- "lower"
   } 
@@ -121,5 +133,5 @@ sig <- cbind(unlist(significance.test(prop.ep)), unlist(significance.test(range.
 )
 colnames(sig) <- c("EPcccl.prop","EPcc.range","EPcc.mean")
 
-write.csv(sig, file = paste("Y://",genus_name,"_significant_EP.csv", sep=""))
+write.csv(sig, file = paste("Y://",genus_name,"_significant_EP_climaticallySuitableAreas.csv", sep=""))
 
