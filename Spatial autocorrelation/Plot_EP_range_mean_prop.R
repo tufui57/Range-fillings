@@ -1,13 +1,14 @@
 #################################################################################################################
 ### Draw plots; EP vs. species range
 #################################################################################################################
-source(".//Range-fillings//Spatial autocorrelation//F_randomClusterSampling.R")
+source(".//GitHub//Range-fillings//Spatial autocorrelation//F_randomClusterSampling.R")
 library(dplyr)
 library(ggplot2)
 
-genus_name <- "Acaena"
+genus_name <- "Chionochloa"
 
-load(paste("Y://", genus_name, "_randomClusterSamples.data", sep = ""))
+a <- load(paste("Y://", genus_name, "_randomClusterSamples.data", sep = ""))
+ran.ep <- get(a)
 
 data2 <- create_dataframe_EP_error(ran.ep)
 
@@ -18,14 +19,6 @@ dat$spname <- gsub("_", ".", dat$spname)
 data2$spname <- gsub("_", ".", data2$spname)
 
 dat2 <- merge(dat, data2, by = "spname")
-
-if(genus_name=="Nothofagus"){
-  dat2 <- cbind(unlist(sp.occ), dat2)
-  colnames(dat2)[1] <- "sp.occ"
-}else{
-  colnames(dat2)[colnames(dat2)=="c.unlist.sp.occ.."] <- "sp.occ"
-}
-
 
 # Default line plot
 p <- ggplot(dat2, aes(x = sp.occ, y = ep.range)) + 

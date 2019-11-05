@@ -8,8 +8,18 @@ library(dplyr)
 ### Data preparation
 ##############################################################################
 genus_name <- "Chionochloa"
-# Import species occurrence data
-load(paste(".//Scores_", genus_name, "_landcover_worldclim1_5km.data", sep = ""))
+if(genus_name == "Nothofagus"){
+  # Import species occurrence data
+  scores <- read.csv("Y://Nothofagus_in_nz.csv")
+  spname <- colnames(scores)[grepl(paste("^", genus_name, sep = ""), colnames(scores))]
+  
+  scores <- scores[!is.na(scores[, spname[1]]), ]
+
+  }else{
+  
+  # Import species occurrence data
+  load(paste(".//Scores_", genus_name, "_landcover_worldclim1_5km.data", sep = ""))
+  }
 
 # Load EPcc
 load(".//EPcc_NZ_4var_test.data")
@@ -57,8 +67,9 @@ names(sp.occ)<- spname
 if(genus_name=="Acaena"){
   sp <-   read.csv("Y:\\1st chapter_Acaena project\\Acaena manuscript\\meta data\\Acaena_data_analyses18sep.csv")
   colnames(sp)
+  }
   
-}else{
+if(genus_name=="Chionochloa"){
   sp <- read.csv("Y://NicheVolume_age_chion.csv")
   colnames(sp)[4] <- "niche_volume"
 }
@@ -84,14 +95,16 @@ for(i in 1:length(epcccl.sp)){
   
 }
 
+ep <- cbind(unlist(sp.occ), unlist(ep.range), sapply(ep.sp, median), sapply(ep.sp, mean), unlist(epcccl.prop)) %>% as.data.frame
+colnames(ep) <- c("sp.occ", "ep.range", "ep.median","ep.mean", "epcccl.prop")
+ep$spname <- rownames(ep)
 
-
-ep.range <- cbind(unlist(ep.range), sapply(ep.sp, median), sapply(ep.sp, mean), unlist(epcccl.prop)) %>% as.data.frame
-colnames(ep.range) <- c("ep.range", "ep.median","ep.mean", "epcccl.prop")
-ep.range$spname <- rownames(ep.range)
-dat <- merge(ep.range, sp, by = "spname")
-dat2 <- data.frame(c(unlist(sp.occ)), names(sp.occ))
-dat <- merge(dat, dat2, by.x = "spname", by.y = "names.sp.occ.")
-
-write.csv(dat, paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
-
+if(genus_name == "Nothofagus"){
+  
+  write.csv(ep, paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
+  
+  }else{
+  
+  dat <- merge(ep, sp, by = "spname")
+  write.csv(dat, paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
+}

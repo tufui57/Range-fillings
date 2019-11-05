@@ -1,7 +1,7 @@
 #############################################################################################################
-### Cluster sampling
+### Random sampling
 #############################################################################################################
-source(".//Range-fillings//Spatial autocorrelation//F_randomClusterSampling.R")
+source(".//GitHub//Range-fillings//Spatial autocorrelation//F_randomClusterSampling.R")
 library(dplyr)
 library(raster)
 
@@ -40,6 +40,21 @@ if(genus_name == "Nothofagus"){
   
   load(paste("Y://ensemblePredictionBinary_", genus_name, "5km_15Jan19_ensamblebinary.data", sep = ""))
 }
+
+#############################################################################################################
+### Random sampling
+#############################################################################################################
+
+ran.ep <- repeat_randomSampling(spname, data1 = scores.ep, 
+                                 iteration = 1000, coordinateNames = c("x","y"))
+names(ran.ep) <- spname
+
+save(ran.ep, file = paste("Y://", genus_name, "_randomSamples.data", sep = ""))
+
+
+#############################################################################################################
+### Cluster sampling
+#############################################################################################################
 
 ran.ep <- repeat_ClusterSampling(spname, data1 = scores.ep, 
                                  iteration = 1000, coordinateNames = c("x","y"))

@@ -33,7 +33,7 @@ if(genus_name == "Nothofagus"){
   
 }
 
-x <- load(paste("Y://", genus_name, "_randomClusterSamples.data", sep = ""))
+x <- load(paste("Y://", genus_name, "_randomSamples_suitableArea.data", sep = ""))
 ran.ep <- get(x)
 
 #############################################################################################################
@@ -111,4 +111,4 @@ sig <- cbind(unlist(sp.occ),
 ) %>% as.data.frame
 colnames(sig) <- c("Range.size", "EPcccl.prop", "EPcc.range", "EPcc.mean")
 
-write.csv(sig, file = paste("Y://", genus_name, "_significant_EP.csv", sep=""))
+write.csv(sig, file = paste("Y://", genus_name, "_significant_EP_suitableArea.csv", sep=""))
