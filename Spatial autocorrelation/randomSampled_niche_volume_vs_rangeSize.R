@@ -1,14 +1,13 @@
-library(dplyr)
-
 ########################################################################################################
 # Random sampling for testing range size vs. niche volume (calcualted by ranges of annual temperature and precipitaion)
 ######################################################################################################
 
+library(dplyr)
+
 ### Data preparation
 
-genus_name <- "Acaena"
-# Import species occurrence data
-load(paste(".//Scores_", genus_name, "_landcover_worldclim1_5km.data", sep = ""))
+# Import climate and PCA data
+load(".//Scores_Acaena_landcover_worldclim1_5km.data")
 
 # Load EPcc
 load(".//EPcc_NZ_4var_test.data")
@@ -31,9 +30,9 @@ random.niche.volume10 <- list()
 
 for(i in seq(10, 1500, 10)){
   
-  test.row <- sample(1:nrow(scores.ep), i)
-  test.s <- scores.ep[test.row, ]
-  random.niche.volume10[[i]] <- nichePlot::SchoenerD_ecospat(scores.ep, "bioclim1", "bioclim12", scores.ep, test.s) 
+  ran.row <- sample(1:nrow(scores.ep), i)
+  ran.sam <- scores.ep[ran.row, ]
+  random.niche.volume10[[i]] <- nichePlot::SchoenerD_ecospat(scores.ep, "PC1", "PC2", scores.ep, ran.sam) 
   
 }
 
@@ -49,3 +48,5 @@ plot(seq(10, 1500, 10),
      ylab = "Climate envelope volume"
 )
 dev.off()
+
+
