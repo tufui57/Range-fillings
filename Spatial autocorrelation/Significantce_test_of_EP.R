@@ -2,13 +2,15 @@
 #############################################################################################################  
 ### Significance test of EP valuse of species habitats based on the distribution of randomly sampled points
 #############################################################################################################
+library(dplyr)
+
 
 genus_name <- "Acaena"
 
 if(genus_name == "Nothofagus"){
   # Import species occurrence data
   scores.ep <- read.csv("Y://Nothofagus_in_nz.csv")
-  spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
+  #spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
   
 }else{
   
@@ -29,9 +31,12 @@ if(genus_name == "Nothofagus"){
   
   scores.ep <- merge(scores, epcc[, c("x", "y", "EPcc")], by = c("x","y")) %>% 
     merge(., epcl[, c("x","y","EPcl")], by = c("x","y"))
-  spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
   
 }
+
+colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))] <-
+  gsub("_", ".", colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))])
+
 
 x <- load(paste("Y://", genus_name, "_randomSamples_suitableArea.data", sep = ""))
 ran.ep <- get(x)
@@ -45,7 +50,7 @@ mean.ep <- sapply(ran.ep, function(x){
   sapply(x, function(y) mean(y$EPcc))
 }
 )
-colnames(mean.ep) <- spname
+colnames(mean.ep) <- names(ran.ep)
 
 # EP range
 range.ep <- sapply(ran.ep, function(x){
@@ -55,7 +60,7 @@ range.ep <- sapply(ran.ep, function(x){
 }
 )
 
-colnames(range.ep) <- spname
+colnames(range.ep) <- names(ran.ep)
 
 # Proportion of positive EPcc-cl
 prop.ep <- sapply(ran.ep, function(x){
@@ -67,19 +72,21 @@ prop.ep <- sapply(ran.ep, function(x){
 }
 )
 
-colnames(prop.ep) <- spname
+colnames(prop.ep) <- names(ran.ep)
 
 
 sp.occ <- list()
-for(i in spname){
+for(i in names(ran.ep)){
   sp.occ[[i]] <- sum(scores.ep[, i] == 1, na.rm = T)
 }
-names(sp.occ) <- spname
+names(sp.occ) <- names(ran.ep)
 
 
 sp <- read.csv(paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
 
-spname <- sp$spname
+sp$spname <- gsub("_", ".", sp$spname)
+
+spname <- names(ran.ep)
 
 #############################################################################################################
 ## Significance test of EP valuse of species habitats based on the distribution of randomly sampled points

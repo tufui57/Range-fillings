@@ -54,34 +54,67 @@ clustersampling <- function(numberOfSamples,
 load("Y://Scores_Chionochloa_landcover5km.data")
 
 ## Repeat random cluster sampling
-samples <- list()
 
-for(j in c(100000, 300000)){
-  cluster.samples <- list()
-  
-  for(i in seq(10, 1500, 10)){
-    samples[[i]] <- clustersampling(numberOfSamples = i, clusterSize = c(j,j), 
-                                  region = scores, coordinateNames = c("x","y"),
-                                  allowMultipleSampling = T)
-  }
-  cluster.samples[[j]] <- samples
+# 100km x 100km cluster
+random.niche.volume <- list()
+
+for(i in seq(10, 1500, 10)){
+  samples <- clustersampling(numberOfSamples = i, clusterSize = c(100000, 100000), 
+                             region = scores, coordinateNames = c("x","y"),
+                             allowMultipleSampling = T)
+  random.niche.volume[[i]] <- nichePlot::SchoenerD_ecospat(scores, "PC1", "PC2", scores, samples)
   
 }
 
-random.niche.volume <- 
-  lapply(cluster.samples[[1]], nichePlot::SchoenerD_ecospat, scores.ep, "PC1", "PC2", scores.ep)
+# 300km x 300km cluster
+random.niche.volume300 <- list()
+
+for(i in seq(10, 1500, 10)){
+  samples <- clustersampling(numberOfSamples = i, clusterSize = c(300000, 300000), 
+                             region = scores, coordinateNames = c("x","y"),
+                             allowMultipleSampling = T)
+  random.niche.volume300[[i]] <- nichePlot::SchoenerD_ecospat(scores, "PC1", "PC2", scores, samples)
+  
+}
+
+# no limited cluster
+random.niche.volumeNZ <- list()
+
+for(i in seq(10, 1500, 10)){
+  
+  ran.row <- sample(1:nrow(scores), i)
+  ran.sam <- scores[ran.row, ]
+  random.niche.volumeNZ[[i]] <- nichePlot::SchoenerD_ecospat(scores, "PC1", "PC2", scores, ran.sam) 
+  
+}
 
 ### Plot
-png("Y://Climate envelope volumes of Randomly sampled areas.png")
+png("Y://Climate envelope volumes of Random cluster samples.png")
 plot(seq(10, 1500, 10), 
-     sapply(random.niche.volume, function(x){
-       x[[1]][1]
+     sapply(seq(10, 1500, 10), function(x){
+       random.niche.volumeNZ[[x]][[1]][1]
      }
      ),
-     main = "Climate envelope volumes of Randomly sampled areas",
-     xlab = "number of samples",
+     main = "Climate envelope volumes of random cluster samples",
+     xlab = "Number of samples",
      ylab = "Climate envelope volume"
 )
+points(seq(10, 1500, 10), 
+       sapply(seq(10, 1500, 10), function(x){
+         random.niche.volume300[[x]][[1]][1]
+       }
+       ), col = "red", pch = 5
+       )
+points(seq(10, 1500, 10), 
+       sapply(seq(10, 1500, 10), function(x){
+         random.niche.volume[[x]][[1]][1]
+       }
+       ), col = "blue", pch = 2
+)
+# Add a legend
+legend(1, 0.85, legend=c("NZ", "300km", "100km"),
+       col = c("black", "red", "blue"), pch=c(1,5,2))
+
 dev.off()
 
 
