@@ -26,7 +26,7 @@ for(i in folders){
       model <- get(mod)
       
       # Extract variable importances
-      imp <- as.data.frame(model@variables.importances@val)
+      imp <- as.data.frame(model@variables.importances@val) # model@variables.importances@val == get_variables_importance(model)
       
       # Rank
       imp.rank <- apply(-imp, 2, rank, ties.method = "min")
@@ -50,4 +50,10 @@ rank.ave <- do.call(rbind, lapply(ave.imp.rank, rank, ties.method = "min"))
 apply(rank.ave, 2, mean)
 
 
+
+#############################################
+### Another function for vvariable importance
+#############################################
+
+variables_importance(model=mod, data=xx[,c('b','c')], method="full_rand", nb_rand=3)
 
