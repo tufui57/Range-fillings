@@ -16,7 +16,8 @@ folders <- list.dirs(getwd(), full.names = FALSE, recursive = F) %>% grepl(genus
 folder.name = "SAI_cinl8Feb19"
 BIOMODproj.name = "SAI_cinl8Feb19"
 
-model.type <- "GLM"
+# Choose type of model from GLM, GAM, GBM, ANN, RF, SRE, MARS (from model@models.computed)
+model.type <- "ANN"
 
 # Calculate rank
 ave.imp.rank <- list()
