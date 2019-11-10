@@ -92,19 +92,23 @@ spname <- names(ran.ep)
 ## Significance test of EP valuse of species habitats based on the distribution of randomly sampled points
 #############################################################################################################
 
-significance.test <- function(ep.data, measure){
+significance.test <- function(ep.data, measure # colname of the EP data
+                              ){
   sig <- list()
   for(i in spname){
     dat <- sp[sp$spname == i,]
     percentile <- quantile(ep.data[,i], probs = c(2.5/100, 1 - 2.5/100))
     
-    sig[[i]] <- "NA"
+    meanEP <- mean(ep.data)
+    
+    sig[[i]] <- ifelse(dat[, measure] < meanEP, "lower", "higher")
+    
     if(dat[, measure] <= percentile[1]){
-      sig[[i]] <- "lower"
+      sig[[i]] <- "lower*"
     } 
     
     if(dat[, measure] >= percentile[2]){
-      sig[[i]] <- "higher"
+      sig[[i]] <- "higher*"
     } 
     
   }
