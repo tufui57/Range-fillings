@@ -5,7 +5,7 @@
 library(dplyr)
 
 
-genus_name <- "Acaena"
+genus_name <- "Chionochloa"
 
 if(genus_name == "Nothofagus"){
   # Import species occurrence data
@@ -38,7 +38,7 @@ colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))
   gsub("_", ".", colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))])
 
 
-x <- load(paste("Y://", genus_name, "_randomSamples_suitableArea.data", sep = ""))
+x <- load(paste("Y://", genus_name, "_randomClusterSamples.data", sep = ""))
 ran.ep <- get(x)
 
 #############################################################################################################
@@ -86,7 +86,18 @@ sp <- read.csv(paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
 
 sp$spname <- gsub("_", ".", sp$spname)
 
-spname <- names(ran.ep)
+library(magrittr)
+
+findIn = function(u, v)
+{
+  strsplit(u,' ') %>%
+    unlist %>%
+    sapply(grep, value=T, x=v) %>%
+    unlist %>%
+    unique
+}
+
+spname <- unique(c(findIn(sp$spname, names(ran.ep)), findIn(names(ran.ep), sp$spname)))
 
 #############################################################################################################
 ## Significance test of EP valuse of species habitats based on the distribution of randomly sampled points
@@ -115,7 +126,7 @@ significance.test <- function(ep.data, measure # colname of the EP data
   return(sig)
 }
 
-sig <- cbind(unlist(sp.occ), 
+sig <- cbind(unlist(sp.occ[spname]), 
              unlist(significance.test(prop.ep, "epcccl.prop")), 
              unlist(significance.test(range.ep, "ep.range")), 
              unlist(significance.test(mean.ep, "ep.mean"))
