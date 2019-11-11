@@ -36,7 +36,11 @@ colnames(epcl)[ncol(epcl)] <- "EPcl"
 scores.ep <- merge(scores, epcc[, c("x", "y", "EPcc")], by = c("x","y")) %>% 
   merge(., epcl[, c("x","y","EPcl")], by = c("x","y"))
 
+colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))] <-
+  colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))] %>% gsub("_", ".", .)
+
 spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
+
 
 #############################################################################################################
 ### Range of EPcc for species habitats
@@ -104,7 +108,7 @@ if(genus_name == "Nothofagus"){
   write.csv(ep, paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
   
   }else{
-  
-  dat <- merge(ep, sp, by = "spname")
-  write.csv(dat, paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
+    dat <- merge(ep, sp, by = "spname")
+    dat$spname <- gsub("_", ".", dat$spname)
+    write.csv(dat, paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
 }

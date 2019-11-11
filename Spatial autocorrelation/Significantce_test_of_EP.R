@@ -5,7 +5,7 @@
 library(dplyr)
 
 
-genus_name <- "Chionochloa"
+genus_name <- "Acaena"
 
 if(genus_name == "Nothofagus"){
   # Import species occurrence data
@@ -41,6 +41,8 @@ colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))
 x <- load(paste("Y://", genus_name, "_randomClusterSamples.data", sep = ""))
 ran.ep <- get(x)
 
+names(ran.ep) <- gsub("_", ".", names(ran.ep))
+
 #############################################################################################################
 ## Calculate mean and range of randomly sampled EP
 #############################################################################################################
@@ -75,14 +77,9 @@ prop.ep <- sapply(ran.ep, function(x){
 colnames(prop.ep) <- names(ran.ep)
 
 
-sp.occ <- list()
-for(i in names(ran.ep)){
-  sp.occ[[i]] <- sum(scores.ep[, i] == 1, na.rm = T)
-}
-names(sp.occ) <- names(ran.ep)
 
 
-sp <- read.csv(paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
+  sp <- read.csv(paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
 
 sp$spname <- gsub("_", ".", sp$spname)
 
@@ -126,11 +123,29 @@ significance.test <- function(ep.data, measure # colname of the EP data
   return(sig)
 }
 
-sig <- cbind(unlist(sp.occ[spname]), 
+sig <- cbind(sp$sp.occ[sp$spname %in% spname], 
              unlist(significance.test(prop.ep, "epcccl.prop")), 
              unlist(significance.test(range.ep, "ep.range")), 
              unlist(significance.test(mean.ep, "ep.mean"))
 ) %>% as.data.frame
 colnames(sig) <- c("Range.size", "EPcccl.prop", "EPcc.range", "EPcc.mean")
 
-write.csv(sig, file = paste("Y://", genus_name, "_significant_EP_suitableArea.csv", sep=""))
+write.csv(sig, file = paste("Y://", genus_name, "_significant_EP_cluster.csv", sep=""))
+
+### Proportion
+for (i in c("EPcccl.prop", "EPcc.range", "EPcc.mean")) {
+  print(i)
+  print(summary(sig[, i]))
+  print(summary(sig[, i]) / nrow(sig))
+}
+
+res <- lapply(c("EPcccl.prop", "EPcc.range", "EPcc.mean"), function(i){
+  (summary(sig[, i]) / nrow(sig))
+}) 
+names(res) <- c("EPcccl.prop", "EPcc.range", "EPcc.mean")
+
+write.csv(unlist(res), file = paste("Y://", genus_name, "_EPsummary_cluster.csv", sep=""))
+
+
+rm(list = ls(all.names = TRUE))
+
