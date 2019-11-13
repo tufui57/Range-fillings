@@ -78,6 +78,7 @@ if(genus_name=="Chionochloa"){
   colnames(sp)[4] <- "niche_volume"
 }
 
+
 names(ep.range) <- spname
 
 #################################################################################################################
@@ -105,6 +106,19 @@ ep$spname <- rownames(ep)
 
 if(genus_name == "Nothofagus"){
   
+  niche <- list()
+  for(i in spname){
+    sp <- scores.ep[scores.ep[, i] == 1, ]
+    niche.vol <- tryCatch(
+      nichePlot::SchoenerD_ecospat(scores.ep, "PC1", "PC2", scores.ep, sp),
+      error = function(err) NA
+    )
+    niche[[i]] <- tryCatch(niche.vol[[1]][1],
+                      error = function(err) NA
+    )
+  }
+  ep$niche_volume <- unlist(niche)
+
   write.csv(ep, paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
   
   }else{

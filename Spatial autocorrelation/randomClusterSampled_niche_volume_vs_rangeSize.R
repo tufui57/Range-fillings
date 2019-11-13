@@ -88,6 +88,12 @@ for(i in seq(10, 1500, 10)){
   
 }
 
+### Climatic niche volume of species
+
+aca <- read.csv("Y://AcaenaEPclimatedata.csv")
+chi <- read.csv("Y://ChionochloaEPclimatedata.csv")
+notho <- read.csv("Y://NothofagusEPclimatedata.csv")
+
 ### Plot
 png("Y://Climate envelope volumes of Random cluster samples.png")
 plot(seq(10, 1500, 10), 
@@ -95,27 +101,37 @@ plot(seq(10, 1500, 10),
        random.niche.volumeNZ[[x]][[1]][1]
      }
      ),
+     ylim = c(0,1),
      main = "Climate envelope volumes of random cluster samples",
      xlab = "Number of samples",
-     ylab = "Climate envelope volume"
+     ylab = "Climate envelope volume", cex=0.5
 )
 points(seq(10, 1500, 10), 
        sapply(seq(10, 1500, 10), function(x){
          random.niche.volume300[[x]][[1]][1]
        }
-       ), col = "red", pch = 5
+       ), col = "red", pch = 5, cex=0.5
        )
 points(seq(10, 1500, 10), 
        sapply(seq(10, 1500, 10), function(x){
          random.niche.volume[[x]][[1]][1]
        }
-       ), col = "blue", pch = 2
+       ), col = "blue", pch = 2, cex=0.5
 )
 # Add a legend
-legend(1, 0.85, legend=c("NZ", "300km", "100km"),
+legend(1, 1, legend=c("NZ", "300km", "100km"),
        col = c("black", "red", "blue"), pch=c(1,5,2))
 
-dev.off()
 
+points(aca$sp.occ, aca$niche_volume, col = "green", pch = 16
+)
+
+points(chi$sp.occ, chi$niche_volume, col = "brown", pch = 16
+)
+
+points(notho$sp.occ, notho$niche_volume, col = "purple", pch = 16
+)
+
+dev.off()
 
 

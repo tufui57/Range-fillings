@@ -77,9 +77,7 @@ prop.ep <- sapply(ran.ep, function(x){
 colnames(prop.ep) <- names(ran.ep)
 
 
-
-
-  sp <- read.csv(paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
+sp <- read.csv(paste("Y://", genus_name, "EPclimatedata.csv", sep = ""))
 
 sp$spname <- gsub("_", ".", sp$spname)
 
@@ -100,12 +98,13 @@ spname <- unique(c(findIn(sp$spname, names(ran.ep)), findIn(names(ran.ep), sp$sp
 ## Significance test of EP valuse of species habitats based on the distribution of randomly sampled points
 #############################################################################################################
 
-significance.test <- function(ep.data, measure # colname of the EP data
+significance.test <- function(ep.data, measure, # colname of the EP data
+                              threshold = 5 # significance threshold. default is upper and lower 5%. 
                               ){
   sig <- list()
   for(i in spname){
     dat <- sp[sp$spname == i,]
-    percentile <- quantile(ep.data[,i], probs = c(2.5/100, 1 - 2.5/100))
+    percentile <- quantile(ep.data[,i], probs = c(threshold/100, 1 - threshold/100))
     
     meanEP <- mean(ep.data)
     
@@ -130,7 +129,7 @@ sig <- cbind(sp$sp.occ[sp$spname %in% spname],
 ) %>% as.data.frame
 colnames(sig) <- c("Range.size", "EPcccl.prop", "EPcc.range", "EPcc.mean")
 
-write.csv(sig, file = paste("Y://", genus_name, "_significant_EP_cluster.csv", sep=""))
+write.csv(sig, file = paste("Y://", genus_name, "_significant_EP_cluster5%.csv", sep=""))
 
 ### Proportion
 for (i in c("EPcccl.prop", "EPcc.range", "EPcc.mean")) {
@@ -144,7 +143,7 @@ res <- lapply(c("EPcccl.prop", "EPcc.range", "EPcc.mean"), function(i){
 }) 
 names(res) <- c("EPcccl.prop", "EPcc.range", "EPcc.mean")
 
-write.csv(unlist(res), file = paste("Y://", genus_name, "_EPsummary_cluster.csv", sep=""))
+write.csv(unlist(res), file = paste("Y://", genus_name, "_EPsummary_cluster5%.csv", sep=""))
 
 
 rm(list = ls(all.names = TRUE))
