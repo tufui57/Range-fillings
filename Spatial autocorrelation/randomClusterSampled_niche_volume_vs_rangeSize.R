@@ -58,7 +58,7 @@ load("Y://Scores_Chionochloa_landcover5km.data")
 # 100km x 100km cluster
 random.niche.volume <- list()
 
-for(i in seq(10, 1500, 10)){
+for(i in seq(10, 1700, 10)){
   samples <- clustersampling(numberOfSamples = i, clusterSize = c(100000, 100000), 
                              region = scores, coordinateNames = c("x","y"),
                              allowMultipleSampling = T)
@@ -69,7 +69,7 @@ for(i in seq(10, 1500, 10)){
 # 300km x 300km cluster
 random.niche.volume300 <- list()
 
-for(i in seq(10, 1500, 10)){
+for(i in seq(10, 1700, 10)){
   samples <- clustersampling(numberOfSamples = i, clusterSize = c(300000, 300000), 
                              region = scores, coordinateNames = c("x","y"),
                              allowMultipleSampling = T)
@@ -80,13 +80,16 @@ for(i in seq(10, 1500, 10)){
 # no limited cluster
 random.niche.volumeNZ <- list()
 
-for(i in seq(10, 1500, 10)){
+for(i in seq(10, 1700, 10)){
   
   ran.row <- sample(1:nrow(scores), i)
   ran.sam <- scores[ran.row, ]
   random.niche.volumeNZ[[i]] <- nichePlot::SchoenerD_ecospat(scores, "PC1", "PC2", scores, ran.sam) 
   
 }
+
+randoms <- c(random.niche.volume, random.niche.volume300, random.niche.volumeNZ)
+save(randoms, file = "randomClusterSamples.data")
 
 ### Climatic niche volume of species
 
@@ -97,8 +100,8 @@ notho <- read.csv("Y://NothofagusEPclimatedata.csv")
 ### Plot
 png("Y://Climate envelope volumes of Random cluster samples.png", width = 700, height = 450)
 
-plot(seq(10, 1500, 10), 
-     sapply(seq(10, 1500, 10), function(x){
+plot(seq(10, 1700, 10), 
+     sapply(seq(10, 1700, 10), function(x){
        random.niche.volumeNZ[[x]][[1]][1]
      }
      ),
@@ -107,14 +110,14 @@ plot(seq(10, 1500, 10),
      xlab = "Number of samples",
      ylab = "Climate envelope volume", cex=0.5
 )
-points(seq(10, 1500, 10), 
-       sapply(seq(10, 1500, 10), function(x){
+points(seq(10, 1700, 10), 
+       sapply(seq(10, 1700, 10), function(x){
          random.niche.volume300[[x]][[1]][1]
        }
        ), col = "red", pch = 5, cex=0.5
        )
-points(seq(10, 1500, 10), 
-       sapply(seq(10, 1500, 10), function(x){
+points(seq(10, 1700, 10), 
+       sapply(seq(10, 1700, 10), function(x){
          random.niche.volume[[x]][[1]][1]
        }
        ), col = "blue", pch = 2, cex=0.5
