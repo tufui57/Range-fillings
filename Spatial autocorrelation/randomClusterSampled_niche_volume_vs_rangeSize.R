@@ -26,9 +26,9 @@ clustersampling <- function(numberOfSamples,
   
   # The neighbourhood square of the first sample
   dat2 <- region[(region[, coordinateNames[1]] <= (first.sample[, coordinateNames[1]] + range.x)), ]
-  neighbour.x <- dat2[(dat2[, coordinateNames[1]] >= (first.sample[, coordinateNames[1]] - range.x)), ]
+  neighbour.x <- dat2[(dat2[, coordinateNames[1]] >= (first.sample[, coordinateNames[1]])), ]
   dat3 <- neighbour.x[(neighbour.x[, coordinateNames[2]] <= (first.sample[, coordinateNames[2]] + range.y)), ]
-  neighbour.xy <- dat3[(dat3[, coordinateNames[2]] >= (first.sample[, coordinateNames[2]] - range.y)), ]
+  neighbour.xy <- dat3[(dat3[, coordinateNames[2]] >= (first.sample[, coordinateNames[2]])), ]
   
   # If the number of grid cells within the neighbourhood is not enough for the sampling, sample the first cell again.
   if(allowMultipleSampling == FALSE && nrow(neighbour.xy) < numberOfSamples){
@@ -91,6 +91,12 @@ for(i in seq(10, 1700, 10)){
 randoms <- c(random.niche.volume, random.niche.volume300, random.niche.volumeNZ)
 save(randoms, file = "randomClusterSamples.data")
 
+
+load("randomClusterSamples.data")
+random.niche.volume <- randoms[1:1700]
+random.niche.volume300 <- randoms[1701:3400]
+random.niche.volumeNZ <- randoms[3401:5100]
+
 ### Climatic niche volume of species
 
 aca <- read.csv("Y://AcaenaEPclimatedata.csv")
@@ -98,7 +104,56 @@ chi <- read.csv("Y://ChionochloaEPclimatedata.csv")
 notho <- read.csv("Y://NothofagusEPclimatedata.csv")
 
 ### Plot
-png("Y://Climate envelope volumes of Random cluster samples.png", width = 700, height = 450)
+# png("Y://Climate envelope volumes of Random cluster samples.png", width = 700, height = 450)
+# 
+# plot(seq(10, 1700, 10), 
+#      sapply(seq(10, 1700, 10), function(x){
+#        random.niche.volumeNZ[[x]][[1]][1]
+#      }
+#      ),
+#      ylim = c(0,1),
+#      main = "Climate envelope volumes of random cluster samples",
+#      xlab = "Number of samples",
+#      ylab = "Climate envelope volume", cex=0.5
+# )
+# points(seq(10, 1700, 10), 
+#        sapply(seq(10, 1700, 10), function(x){
+#          random.niche.volume300[[x]][[1]][1]
+#        }
+#        ), col = "red", pch = 5, cex=0.5
+#        )
+# points(seq(10, 1700, 10), 
+#        sapply(seq(10, 1700, 10), function(x){
+#          random.niche.volume[[x]][[1]][1]
+#        }
+#        ), col = "blue", pch = 2, cex=0.5
+# )
+# 
+# # Add sepcies niche volume
+# points(aca$sp.occ, aca$niche_volume, col = "green", pch = 16
+# )
+# 
+# points(chi$sp.occ, chi$niche_volume, col = "brown", pch = 16
+# )
+# 
+# points(notho$sp.occ, notho$niche_volume, col = "purple", pch = 16
+# )
+# 
+# # Add a legend
+# legend(1, 1, legend=c("NZ", "300km", "100km"),
+#        col = c("black", "red", "blue"), pch = c(1,5,2),  bty="n")
+# legend(170, 1, legend=c("Acaena", "Chionohcloa", "Nothofagus"),
+#        col = c("green", "brown", "purple"), pch = c(16,16,16),  bty="n")
+# 
+# 
+# dev.off()
+
+
+
+### Plot
+png("Y://Climate envelope volumes of Random cluster samples2.png", width = 400, height = 500)
+
+par(mfrow=c(3,1), mar=c(3.1, 4.1, 0.6, 2.1), cex=0.9)
 
 plot(seq(10, 1700, 10), 
      sapply(seq(10, 1700, 10), function(x){
@@ -106,21 +161,8 @@ plot(seq(10, 1700, 10),
      }
      ),
      ylim = c(0,1),
-     main = "Climate envelope volumes of random cluster samples",
      xlab = "Number of samples",
      ylab = "Climate envelope volume", cex=0.5
-)
-points(seq(10, 1700, 10), 
-       sapply(seq(10, 1700, 10), function(x){
-         random.niche.volume300[[x]][[1]][1]
-       }
-       ), col = "red", pch = 5, cex=0.5
-       )
-points(seq(10, 1700, 10), 
-       sapply(seq(10, 1700, 10), function(x){
-         random.niche.volume[[x]][[1]][1]
-       }
-       ), col = "blue", pch = 2, cex=0.5
 )
 
 # Add sepcies niche volume
@@ -134,12 +176,59 @@ points(notho$sp.occ, notho$niche_volume, col = "purple", pch = 16
 )
 
 # Add a legend
-legend(1, 1, legend=c("NZ", "300km", "100km"),
-       col = c("black", "red", "blue"), pch = c(1,5,2),  bty="n")
-legend(170, 1, legend=c("Acaena", "Chionohcloa", "Nothofagus"),
-       col = c("green", "brown", "purple"), pch = c(16,16,16),  bty="n")
+legend(1, 1, legend="NZ",
+       col = "black", pch = 1,  bty="n")
 
+
+### Plot 300km
+plot(seq(10, 1700, 10), 
+     sapply(seq(10, 1700, 10), function(x){
+       random.niche.volume300[[x]][[1]][1]
+     }
+     ),
+     ylim = c(0,1),
+     xlab = "Number of samples",
+     ylab = "Climate envelope volume", cex=0.5
+)
+
+
+# Add sepcies niche volume
+points(aca$sp.occ, aca$niche_volume, col = "green", pch = 16
+)
+
+points(chi$sp.occ, chi$niche_volume, col = "brown", pch = 16
+)
+
+points(notho$sp.occ, notho$niche_volume, col = "purple", pch = 16
+)
+
+# Add a legend
+legend(1, 1, legend="300km",
+col = "black", pch = 1,  bty="n")
+
+### Plot 100km
+plot(seq(10, 1700, 10), 
+     sapply(seq(10, 1700, 10), function(x){
+       random.niche.volume[[x]][[1]][1]
+     }
+     ),
+     ylim = c(0,1),
+     xlab = "Number of samples",
+     ylab = "Climate envelope volume", cex=0.5
+)
+
+# Add sepcies niche volume
+points(aca$sp.occ, aca$niche_volume, col = "green", pch = 16
+)
+
+points(chi$sp.occ, chi$niche_volume, col = "brown", pch = 16
+)
+
+points(notho$sp.occ, notho$niche_volume, col = "purple", pch = 16
+)
+
+# Add a legend
+legend(1, 1, legend="100km",
+       col = "black", pch = 1,  bty="n")
 
 dev.off()
-
-

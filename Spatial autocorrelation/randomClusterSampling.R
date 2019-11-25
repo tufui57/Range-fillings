@@ -8,11 +8,8 @@ library(raster)
 genus_name <- "Nothofagus"
 if(genus_name == "Nothofagus"){
   # Import species occurrence data
-  scores.ep <- read.csv("Y://Nothofagus_in_nz.csv")
-  spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
-  
-  scores.ep <- scores.ep[!is.na(scores.ep[, spname[1]]), ]
-  
+  scores <- read.csv("Y://Nothofagus_in_nz.csv")
+
   load(paste("Y://ensemblePredictionBinary_", genus_name, "31Oct19_ensamblebinary.data", sep = ""))
   
 }else{
@@ -20,26 +17,28 @@ if(genus_name == "Nothofagus"){
   # Import species occurrence data
   load(paste("Y://Scores_", genus_name, "_landcover5km.data", sep = ""))
   
-  # Load EPcc
-  load("Y://EPcc_NZ_4var_test.data")
-  epcc <- load("Y://EPcc_NZ_4var_test.data")
-  epcc <- get(epcc)
-  colnames(epcc)[ncol(epcc)] <- "EPcc"
-  
-  # Load EPcl
-  load("Y://EPcl_NZ_4var.data")
-  epcl <- load("Y://EPcl_NZ_4var.data")
-  epcl <- get(epcl)
-  colnames(epcl)[ncol(epcl)] <- "EPcl"
-  
-  scores.ep <- merge(scores, epcc[, c("x", "y", "EPcc")], by = c("x","y")) %>% 
-    merge(., epcl[, c("x","y","EPcl")], by = c("x","y"))
-  
-  spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
-  colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))] <- gsub("_",".",spname)
-  
   load(paste("Y://ensemblePredictionBinary_", genus_name, "5km_15Jan19_ensamblebinary.data", sep = ""))
 }
+
+# Load EPcc
+load("Y://EPcc_NZ_4var_test.data")
+epcc <- load("Y://EPcc_NZ_4var_test.data")
+epcc <- get(epcc)
+colnames(epcc)[ncol(epcc)] <- "EPcc"
+
+# Load EPcl
+load("Y://EPcl_NZ_4var.data")
+epcl <- load("Y://EPcl_NZ_4var.data")
+epcl <- get(epcl)
+colnames(epcl)[ncol(epcl)] <- "EPcl"
+
+scores.ep <- merge(scores, epcc[, c("x", "y", "EPcc")], by = c("x","y")) %>% 
+  merge(., epcl[, c("x","y","EPcl")], by = c("x","y"))
+
+spname <- colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))]
+colnames(scores.ep)[grepl(paste("^", genus_name, sep = ""), colnames(scores.ep))] <- gsub("_",".",spname)
+spname <- gsub("_",".",spname)
+
 
 #############################################################################################################
 ### Random sampling
