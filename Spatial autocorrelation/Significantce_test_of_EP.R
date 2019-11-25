@@ -5,7 +5,7 @@
 library(dplyr)
 
 
-genus_name <- "Nothofagus"
+genus_name <- "Chionochloa"
 
 if(genus_name == "Nothofagus"){
   # Import species occurrence data
@@ -134,8 +134,23 @@ for (i in c("EPcccl.prop", "EPcc.range", "EPcc.mean")) {
 }
 
 res <- lapply(c("EPcccl.prop", "EPcc.range", "EPcc.mean"), function(i){
-  (summary(sig[, i]) / nrow(sig))
-}) 
+  res1 <- c(sum(sig[,i]=="higher") / nrow(sig),
+            sum(sig[,i]=="higher*") / nrow(sig),
+            sum(sig[,i]=="lower") / nrow(sig),
+            sum(sig[,i]=="lower*") / nrow(sig)
+            )
+  names(res1) <- c("higher", "higher*", "lower", "lower*")
+  
+  res2 <- c(sum(c(res1["higher"], res1["higher*"]), na.rm = T), res1["higher*"], 
+      sum(c(res1["lower"] + res1["lower*"]), na.rm = T), res1["lower*"]
+      )
+  
+  names(res2 )<- c("higher", "higher*", "lower", "lower*")
+  
+  return(res2)
+  
+})
+
 names(res) <- c("EPcccl.prop", "EPcc.range", "EPcc.mean")
 
 write.csv(unlist(res), file = paste("Y://", genus_name, "_EPsummary_cluster5%.csv", sep=""))
